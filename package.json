@@ -1,24 +1,41 @@
 {
-  "name": "finance-app",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "react": "^18",
-    "react-dom": "^18",
-    "next": "14.0.4"
-  },
-  "devDependencies": {
-    "typescript": "^5",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "eslint": "^8",
-    "eslint-config-next": "14.0.4"
-  }
+	"name": "finance-app",
+	"version": "0.1.0",
+	"private": true,
+	"scripts": {
+		"dev": "next dev",
+		"build": "next build",
+		"start": "next start",
+		"lint": "next lint",
+		"prisma:seed": "ts-node --transpile-only ./src/prisma/seed.mjs",
+		"prisma:generate": "npx prisma generate --schema=./src/prisma/schema.prisma"
+	},
+	"dependencies": {
+		"@apollo/client": "^3.8.0-rc.2",
+		"@apollo/experimental-nextjs-app-support": "^0.5.2",
+		"@auth0/nextjs-auth0": "^3.5.0",
+		"@emotion/react": "^11.11.1",
+		"@emotion/styled": "^11.11.0",
+		"@mui/icons-material": "^5.15.0",
+		"@mui/material": "^5.15.0",
+		"@pothos/core": "^3.40.1",
+		"@pothos/plugin-prisma": "^3.63.0",
+		"@prisma/client": "^5.7.0",
+		"graphql": "^16.8.1",
+		"graphql-yoga": "^5.0.2",
+		"next": "14.0.4",
+		"react": "^18",
+		"react-dom": "^18",
+		"recharts": "^2.10.3"
+	},
+	"devDependencies": {
+		"@types/node": "^20",
+		"@types/react": "^18",
+		"@types/react-dom": "^18",
+		"eslint": "^8",
+		"eslint-config-next": "14.0.4",
+		"prisma": "^5.7.0",
+		"ts-node": "^10.9.2",
+		"typescript": "^5"
+	}
 }

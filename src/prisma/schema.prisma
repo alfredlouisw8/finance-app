@@ -1,0 +1,33 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+generator pothos {
+  provider = "prisma-pothos-types"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  name      String?
+  email     String?  @unique
+  phone     String?
+  role      Role     @default(ADVISOR)
+  advisorId String?  @db.ObjectId
+  users     User[]   @relation("Advisors")
+  advisor   User?    @relation("Advisors", fields: [advisorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum Role {
+  ADVISOR
+  USER
+}
