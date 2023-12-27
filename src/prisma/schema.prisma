@@ -15,16 +15,19 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  name      String?
-  email     String?  @unique
-  phone     String?
-  role      Role     @default(ADVISOR)
-  advisorId String?  @db.ObjectId
-  users     User[]   @relation("Advisors")
-  advisor   User?    @relation("Advisors", fields: [advisorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id                    String   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  name                  String?
+  email                 String?  @unique
+  phone                 String?
+  role                  Role     @default(ADVISOR)
+  riskProfile           String?
+  equityAllocation      Int?
+  fixedIncomeAllocation Int?
+  advisorId             String?  @db.ObjectId
+  users                 User[]   @relation("Advisors")
+  advisor               User?    @relation("Advisors", fields: [advisorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 enum Role {
