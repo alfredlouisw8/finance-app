@@ -34,7 +34,9 @@ import {
 } from "./ui/form";
 import { Slider } from "./ui/slider";
 import { Input } from "./ui/input";
-import { gql, useMutation } from "@apollo/client";
+import { Router } from "next/router";
+import { useRouter } from "next/navigation";
+import { Role } from "@prisma/client";
 
 const formSchema = z
 	.object({
@@ -43,19 +45,9 @@ const formSchema = z
 	})
 	.required();
 
-const mutation = gql`
-	mutation updateAssetAllocation(
-		$equity: Int!
-		$fixedIncome: Int!
-		$id: String!
-	) {
-		updateAssetAllocation(equity: $equity, fixedIncome: $fixedIncome, id: $id) {
-			id
-		}
-	}
-`;
+export default function RiskProfileSection({ user, currentRole }) {
+	const router = useRouter();
 
-export default function RiskProfileSection({ user }) {
 	const [equities, setEquities] = useState(user.equityAllocation || 50);
 	const fixedIncome = 100 - equities;
 
@@ -73,9 +65,6 @@ export default function RiskProfileSection({ user }) {
 		// Do something with the form values.
 		// ✅ This will be type-safe and validated.
 
-		console.log(values);
-		setEquities(values.equities);
-
 		const response = await updateAssetAllocation({
 			variables: {
 				id: user.id,
@@ -83,8 +72,9 @@ export default function RiskProfileSection({ user }) {
 				fixedIncome: values.fixedIncome,
 			},
 		});
+		setEquities(values.equities);
 
-		console.log(response);
+		router.refresh();
 	}
 
 	const pieChartData = {
@@ -111,67 +101,69 @@ export default function RiskProfileSection({ user }) {
 					<Link href={`/client/${user.id}/risk-profile-survey`}>
 						<Button>Take Risk Profile Survey</Button>
 					</Link>
-					<Dialog>
-						<DialogTrigger asChild>
-							<Button>Edit Asset Allocation</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>Asset Allocation</DialogTitle>
-							</DialogHeader>
+					{currentRole === Role.ADVISOR && (
+						<Dialog>
+							<DialogTrigger asChild>
+								<Button>Edit Asset Allocation</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Asset Allocation</DialogTitle>
+								</DialogHeader>
 
-							<Form {...form}>
-								<form
-									onSubmit={form.handleSubmit(onSubmit)}
-									className="space-y-8"
-								>
-									<FormField
-										control={form.control}
-										name="equities"
-										render={({ field }) => (
-											<FormItem>
-												<FormControl>
-													<div className="flex flex-col gap-5">
-														<div className="flex flex-row items-center justify-between">
-															<FormLabel>Equity: {field.value}%</FormLabel>
-															<FormLabel>
-																Fixed Income: {100 - field.value}%
-															</FormLabel>
+								<Form {...form}>
+									<form
+										onSubmit={form.handleSubmit(onSubmit)}
+										className="space-y-8"
+									>
+										<FormField
+											control={form.control}
+											name="equities"
+											render={({ field }) => (
+												<FormItem>
+													<FormControl>
+														<div className="flex flex-col gap-5">
+															<div className="flex flex-row items-center justify-between">
+																<FormLabel>Equity: {field.value}%</FormLabel>
+																<FormLabel>
+																	Fixed Income: {100 - field.value}%
+																</FormLabel>
+															</div>
+															<Slider
+																max={100}
+																step={10}
+																defaultValue={[field.value]}
+																onValueChange={handleSliderChange}
+															/>
 														</div>
-														<Slider
-															max={100}
-															step={10}
-															defaultValue={[field.value]}
-															onValueChange={handleSliderChange}
-														/>
-													</div>
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-									<FormField
-										control={form.control}
-										name="fixedIncome"
-										render={({ field }) => (
-											<FormItem className="hidden">
-												<FormControl>
-													<Input {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
+										<FormField
+											control={form.control}
+											name="fixedIncome"
+											render={({ field }) => (
+												<FormItem className="hidden">
+													<FormControl>
+														<Input {...field} />
+													</FormControl>
+													<FormMessage />
+												</FormItem>
+											)}
+										/>
 
-									<DialogFooter>
-										<DialogClose asChild>
-											<Button type="submit">Submit</Button>
-										</DialogClose>
-									</DialogFooter>
-								</form>
-							</Form>
-						</DialogContent>
-					</Dialog>
+										<DialogFooter>
+											<DialogClose asChild>
+												<Button type="submit">Submit</Button>
+											</DialogClose>
+										</DialogFooter>
+									</form>
+								</Form>
+							</DialogContent>
+						</Dialog>
+					)}
 				</div>
 			</CardHeader>
 			<CardContent>

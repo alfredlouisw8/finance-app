@@ -74,8 +74,6 @@ export function RiskProfileSurveyForm({ id }: { id: string }) {
 			},
 		});
 
-		console.log(response);
-
 		router.replace(`/client/${id}`);
 		router.refresh();
 	}
