@@ -1,4 +1,4 @@
-import AddUserForm from "@/components/AddUserForm";
+import AddUserForm from "./_components/AddUserForm";
 
 export default async function Page() {
 	return (

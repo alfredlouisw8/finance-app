@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 
-import { CreateUser } from "./schema";
+import { UpdateAssetAllocation } from "./schema";
 import { InputType, ReturnType } from "./types";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -21,38 +21,29 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
 	let user;
 
-	const { email, name } = data;
+	const { equities, clientId } = data;
 
 	try {
-		await prisma.$transaction([
-			prisma.user.upsert({
-				where: {
-					email: email,
-				},
-				update: {
-					name: name,
-					advisorId: session.user.id,
-				},
-				create: {
-					email: email,
-					name: name,
-					advisorId: session.user.id,
-				},
-			}),
-			prisma.client.create({
-				data: {
-					email: email,
-				},
-			}),
-		]);
+		user = await prisma.user.update({
+			where: {
+				id: clientId,
+			},
+			data: {
+				equityAllocation: equities,
+				fixedIncomeAllocation: 100 - equities,
+			},
+		});
 	} catch (error) {
 		return {
-			error: "Failed to create user.",
+			error: "Failed to update asset allocation",
 		};
 	}
 
-	revalidatePath(`/dashboard`);
+	revalidatePath(`/client/${clientId}`);
 	return { data: user };
 };
 
-export const createUser = createSafeAction(CreateUser, handler);
+export const updateAssetAllocation = createSafeAction(
+	UpdateAssetAllocation,
+	handler
+);

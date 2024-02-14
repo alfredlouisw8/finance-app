@@ -15,22 +15,21 @@ import {
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from "./ui/card";
+} from "../../../../../components/ui/card";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Button } from "./ui/button";
+import { Button } from "../../../../../components/ui/button";
 import { useRouter } from "next/navigation";
 import { CreateUser } from "@/actions/users/createUser/schema";
 import { useAction } from "@/hooks/useAction";
 import { createUser } from "@/actions/users/createUser";
-import { toast } from "./ui/use-toast";
+import { toast } from "../../../../../components/ui/use-toast";
 
 const formSchema = CreateUser;
 
 export default function AddUserForm() {
-	// 1. Define your form.
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
@@ -45,6 +44,7 @@ export default function AddUserForm() {
 			toast({
 				title: "User successfully created",
 			});
+			router.replace("/dashboard");
 		},
 		onError: (error) => {
 			toast({
@@ -54,11 +54,7 @@ export default function AddUserForm() {
 		},
 	});
 
-	// 2. Define a submit handler.
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		// Do something with the form values.
-		// ✅ This will be type-safe and validated.
-
 		await execute(values);
 
 		if (fieldErrors) {
@@ -70,8 +66,6 @@ export default function AddUserForm() {
 			}
 			return;
 		}
-
-		router.replace("/dashboard");
 	}
 
 	return (

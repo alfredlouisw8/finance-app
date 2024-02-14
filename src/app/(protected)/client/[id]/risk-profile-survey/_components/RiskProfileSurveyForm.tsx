@@ -14,68 +14,68 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { Label } from "./ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+	RadioGroup,
+	RadioGroupItem,
+} from "../../../../../../components/ui/radio-group";
+import { Label } from "../../../../../../components/ui/label";
+import {
+	Card,
+	CardContent,
+	CardHeader,
+	CardTitle,
+} from "../../../../../../components/ui/card";
 import { riskProfileSurvey } from "@/utils/consts";
 import Image from "next/image";
 import { getRiskProfileResult } from "@/utils/functions";
-import { getClient } from "@/lib/apollo-server";
-import { gql, useMutation } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { UpdateRiskProfile } from "@/actions/users/updateRiskProfile/schema";
+import { useAction } from "@/hooks/useAction";
+import { toast } from "../../../../../../components/ui/use-toast";
+import { updateRiskProfile } from "@/actions/users/updateRiskProfile";
+import { CreateUser } from "@/actions/users/createUser/schema";
+import { Input } from "../../../../../../components/ui/input";
 
-const mutation = gql`
-	mutation updateRiskProfile($id: String!, $riskProfile: String!) {
-		updateRiskProfile(id: $id, riskProfile: $riskProfile) {
-			id
-			riskProfile
-		}
-	}
-`;
-
-const formSchema = z
-	.object({
-		question1: z.number(),
-		question2: z.number(),
-		question3: z.number(),
-		question4: z.number(),
-		question5: z.number(),
-		question6: z.number(),
-		question7: z.number(),
-	})
-	.required();
+const formSchema = UpdateRiskProfile;
 
 export function RiskProfileSurveyForm({ id }: { id: string }) {
-	// 1. Define your form.
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
+		defaultValues: {
+			clientId: id,
+		},
 	});
 
 	const router = useRouter();
 
-	const [updateRiskProfile] = useMutation(mutation);
+	const { execute, fieldErrors, isLoading } = useAction(updateRiskProfile, {
+		onSuccess: () => {
+			toast({
+				title: "Risk profile successfully created",
+			});
+			router.replace(`/client/${id}`);
+		},
+		onError: (error) => {
+			toast({
+				title: error,
+				variant: "destructive",
+			});
+		},
+	});
 
-	// 2. Define a submit handler.
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		// Do something with the form values.
-		// ✅ This will be type-safe and validated.
+		await execute(values);
 
-		values.question1 = 0; //remove question 1's point
-
-		const result = getRiskProfileResult(
-			Object.values(values).reduce((a, b) => a + b)
-		);
-
-		const response = await updateRiskProfile({
-			variables: {
-				id,
-				riskProfile: result,
-			},
-		});
-
-		router.replace(`/client/${id}`);
-		router.refresh();
+		if (fieldErrors) {
+			for (const [key, value] of Object.entries(fieldErrors)) {
+				form.setError(key as keyof typeof fieldErrors, {
+					type: "manual",
+					message: value.join(","),
+				});
+			}
+			return;
+		}
 	}
 
 	return (
@@ -84,7 +84,9 @@ export function RiskProfileSurveyForm({ id }: { id: string }) {
 				{riskProfileSurvey.map((question, questionIndex) => (
 					<Card key={questionIndex}>
 						<CardHeader>
-							<CardTitle>{question.question}</CardTitle>
+							<CardTitle>
+								{questionIndex + 1}. {question.question}
+							</CardTitle>
 							{question.image && (
 								<Image
 									src={question.image}
@@ -98,8 +100,7 @@ export function RiskProfileSurveyForm({ id }: { id: string }) {
 						<CardContent>
 							<FormField
 								control={form.control}
-								//@ts-ignore
-								name={question.name}
+								name={question.name as keyof typeof formSchema.strip}
 								render={({ field }) => (
 									<FormItem>
 										<FormControl>
@@ -114,9 +115,9 @@ export function RiskProfileSurveyForm({ id }: { id: string }) {
 													>
 														<RadioGroupItem
 															value={
-																questionIndex > 0
+																(questionIndex > 0
 																	? choice.point * question.weight
-																	: choice.point
+																	: choice.point) + ""
 															} //first question weight is 0
 															id={`${question.name}_choice${choiceIndex + 1}`}
 														/>
@@ -138,8 +139,9 @@ export function RiskProfileSurveyForm({ id }: { id: string }) {
 						</CardContent>
 					</Card>
 				))}
-
-				<Button type="submit">Submit</Button>
+				<Button aria-disabled={isLoading} type="submit">
+					Submit
+				</Button>
 			</form>
 		</Form>
 	);

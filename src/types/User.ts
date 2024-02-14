@@ -1,13 +1,3 @@
-export type User = {
-	id: string;
-	name: string;
-	email: string;
-	riskProfile?: RiskProfile;
-	createdAt: string;
-	equityAllocation?: number;
-	advisorId: string;
-};
-
 export enum RiskProfile {
 	RISK_SEEKING = "Risk-seeking",
 	SLIGHTLY_RISK_SEEKING = "Slightly risk-seeking",

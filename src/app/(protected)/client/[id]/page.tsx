@@ -1,6 +1,6 @@
 import getUserDetail from "@/actions/users/getUserDetail";
 import PieChart from "@/components/PieChart";
-import RiskProfileSection from "@/components/RiskProfileSection";
+import RiskProfileSection from "@/app/(protected)/client/[id]/_components/RiskProfileSection";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -18,10 +18,11 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { authOptions } from "@/lib/auth";
-import { User } from "@/types/User";
+import { Role } from "@/types/User";
 import { format } from "date-fns";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
+import PortfolioSection from "./_components/PortfolioSection";
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const session = await getServerSession(authOptions);
@@ -44,16 +45,27 @@ export default async function Page({ params }: { params: { id: string } }) {
 				</CardHeader>
 			</Card>
 
-			<Card>
-				{!user.riskProfile && (
-					<div className="p-5 flex items-center justify-center h-40">
+			{!user.riskProfile && (
+				<Card>
+					<div className="p-5 flex flex-col items-center justify-center h-40 gap-3">
 						<p>Risk profile not found</p>
+
+						{session?.user.role === Role.ADVISOR && (
+							<Link href={`/client/${user.id}/risk-profile-survey`}>
+								<Button>Take Risk Profile Survey</Button>
+							</Link>
+						)}
 					</div>
-				)}
-				{user.riskProfile && (
-					<RiskProfileSection user={user} currentRole={session?.user.role} />
-				)}
-			</Card>
+				</Card>
+			)}
+			{user.riskProfile && (
+				<RiskProfileSection
+					user={user}
+					currentRole={session?.user.role as Role}
+				/>
+			)}
+
+			<PortfolioSection user={user} currentRole={session?.user.role as Role} />
 		</div>
 	);
 }

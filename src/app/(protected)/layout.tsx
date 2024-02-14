@@ -6,9 +6,13 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { authOptions } from "@/lib/auth";
+import { getAnnualizedReturn } from "@/utils/functions";
+import { sub } from "date-fns";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+
+import yahooFinance from "yahoo-finance2";
 
 export default async function ProtectedLayout({
 	children,
@@ -16,10 +20,6 @@ export default async function ProtectedLayout({
 	children: React.ReactNode;
 }) {
 	const session = await getServerSession(authOptions);
-
-	// if (!session) {
-	// 	redirect("/");
-	// }
 
 	return (
 		<>

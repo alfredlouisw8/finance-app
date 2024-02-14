@@ -61,9 +61,16 @@ model User {
   riskProfile           String?
   equityAllocation      Int?
   fixedIncomeAllocation Int?
+  portfolioContribution Int?
   advisorId             String?   @db.ObjectId
   users                 User[]    @relation("Advisors")
   advisor               User?     @relation("Advisors", fields: [advisorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model ApplicationSetting {
+  id    String @id @default(auto()) @map("_id") @db.ObjectId
+  name  String @unique
+  value String
 }
 
 model VerificationToken {
