@@ -23,6 +23,8 @@ import { format } from "date-fns";
 import { getServerSession } from "next-auth";
 import Link from "next/link";
 import PortfolioSection from "./_components/PortfolioSection";
+import CurrentCompositionSection from "./_components/CurrentCompositionSection";
+import ProposedCompositionSection from "./_components/ProposedCompositionSection";
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const session = await getServerSession(authOptions);
@@ -66,6 +68,17 @@ export default async function Page({ params }: { params: { id: string } }) {
 			)}
 
 			<PortfolioSection user={user} currentRole={session?.user.role as Role} />
+
+			<div className="grid grid-cols-2 gap-5">
+				<CurrentCompositionSection
+					user={user}
+					currentRole={session?.user.role as Role}
+				/>
+				<ProposedCompositionSection
+					user={user}
+					currentRole={session?.user.role as Role}
+				/>
+			</div>
 		</div>
 	);
 }

@@ -44,7 +44,7 @@ export default function AddUserForm() {
 			toast({
 				title: "User successfully created",
 			});
-			router.replace("/dashboard");
+			router.push("/dashboard");
 		},
 		onError: (error) => {
 			toast({
