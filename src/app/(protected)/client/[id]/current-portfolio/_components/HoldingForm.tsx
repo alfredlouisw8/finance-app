@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { RefObject, useRef, useState } from "react";
 import { Check, ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -43,62 +43,27 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { HoldingType } from "@prisma/client";
+import { Holding, HoldingType } from "@prisma/client";
+import { UpdateHolding } from "@/actions/holding/updateHolding/schema";
+import { updateHolding } from "@/actions/holding/updateHolding";
 
 type Props = {
-	portfolioId: string;
-	userId: string;
+	closeDialogRef: RefObject<HTMLButtonElement>;
+	form: any;
+	onSubmit: any;
+	holding?: Holding;
 };
 
-const formSchema = CreateHolding;
-
-export default function HoldingForm({ portfolioId, userId }: Props) {
-	const closeDialogRef = useRef<HTMLButtonElement>(null);
-
-	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
-		defaultValues: {
-			averageBuyPrice: 0,
-			amount: 0,
-			portfolioId,
-			userId,
-			ticker: "",
-			type: HoldingType.US_STOCK,
-		},
-	});
-
-	const { execute, fieldErrors } = useAction(createHolding, {
-		onSuccess: () => {
-			toast({
-				title: "Holding successfully updated",
-			});
-			closeDialogRef.current?.click();
-		},
-		onError: (error) => {
-			toast({
-				title: error,
-				variant: "destructive",
-			});
-		},
-	});
-
-	async function onSubmit(values: z.infer<typeof formSchema>) {
-		await execute(values);
-
-		if (fieldErrors) {
-			for (const [key, value] of Object.entries(fieldErrors)) {
-				form.setError(key as keyof typeof fieldErrors, {
-					type: "manual",
-					message: value.join(","),
-				});
-			}
-			return;
-		}
-	}
-
+export default function HoldingForm({
+	closeDialogRef,
+	form,
+	onSubmit,
+	holding,
+}: Props) {
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+				<input type="hidden" name="holdingId" value={holding?.id} />
 				<FormField
 					control={form.control}
 					name="ticker"

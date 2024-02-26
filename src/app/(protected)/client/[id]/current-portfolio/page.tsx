@@ -17,11 +17,15 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { User } from "@prisma/client";
+import { HoldingType, User } from "@prisma/client";
 import { Role } from "@/types/User";
 import getUserDetail from "@/actions/users/getUserDetail";
 import yahooFinance from "yahoo-finance2";
 import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
+import { numberWithCommas } from "@/utils/functions";
+import { Pencil, Trash2 } from "lucide-react";
+import NewHoldingForm from "./_components/NewHoldingForm";
+import EditHoldingForm from "./_components/EditHoldingForm";
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const user = await getUserDetail(params.id);
@@ -34,10 +38,19 @@ export default async function Page({ params }: { params: { id: string } }) {
 		user.currentPortfolioId as string
 	);
 
-	const quotes = await yahooFinance.quote(
-		holdings.map((item) => item.ticker),
-		{ fields: ["displayName", "regularMarketPrice"] }
+	const quotes = await Promise.all(
+		holdings.map(async (holding) => {
+			const result = await yahooFinance.quoteSummary(holding.ticker, {
+				modules: ["price"],
+			});
+			return {
+				name: result.price?.longName,
+				price: result.price?.regularMarketPrice,
+			};
+		})
 	);
+
+	const USDIDR = await yahooFinance.quote("IDR=X");
 
 	function calculatePerformance(startPrice: number, endPrice: number) {
 		if (!endPrice || !startPrice) {
@@ -47,7 +60,23 @@ export default async function Page({ params }: { params: { id: string } }) {
 		return ((endPrice / startPrice - 1) * 100).toFixed(2) + "%";
 	}
 
-	console.log(quotes);
+	function getTotalValue(
+		lastPrice: number | undefined,
+		amount: number,
+		type: HoldingType
+	) {
+		if (!lastPrice) {
+			return "N/A";
+		}
+		let totalValue;
+		totalValue = lastPrice * amount;
+
+		if (type === HoldingType.US_STOCK) {
+			totalValue = lastPrice * amount * USDIDR.regularMarketPrice!;
+		}
+
+		return `IDR ${numberWithCommas(parseInt(totalValue.toFixed(2)))}`;
+	}
 
 	return (
 		<Card>
@@ -60,10 +89,10 @@ export default async function Page({ params }: { params: { id: string } }) {
 					</DialogTrigger>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Holding</DialogTitle>
+							<DialogTitle>New Holding</DialogTitle>
 						</DialogHeader>
 
-						<HoldingForm
+						<NewHoldingForm
 							portfolioId={user.currentPortfolioId as string}
 							userId={params.id}
 						/>
@@ -77,9 +106,11 @@ export default async function Page({ params }: { params: { id: string } }) {
 							<TableHead className="w-[100px]">No</TableHead>
 							<TableHead>Investment Product Name</TableHead>
 							<TableHead>Ticker</TableHead>
+							<TableHead>Type</TableHead>
 							<TableHead>Amount</TableHead>
 							<TableHead>Avg Buy Price</TableHead>
 							<TableHead>Last Price</TableHead>
+							<TableHead>Total</TableHead>
 							<TableHead>Performance</TableHead>
 							<TableHead className="text-right">Action</TableHead>
 						</TableRow>
@@ -90,21 +121,46 @@ export default async function Page({ params }: { params: { id: string } }) {
 								return (
 									<TableRow key={data.id}>
 										<TableCell className="font-medium">{i + 1}</TableCell>
-										<TableCell>{quotes[i].displayName}</TableCell>
+										<TableCell>{quotes[i].name}</TableCell>
+										<TableCell>{data.type}</TableCell>
 										<TableCell>{data.ticker}</TableCell>
 										<TableCell>{data.amount}</TableCell>
 										<TableCell>{data.averageBuyPrice}</TableCell>
-										<TableCell>{quotes[i].regularMarketPrice}</TableCell>
+										<TableCell>{quotes[i].price}</TableCell>
+										<TableCell>
+											{getTotalValue(quotes[i].price, data.amount, data.type)}
+										</TableCell>
 										<TableCell>
 											{calculatePerformance(
 												data.averageBuyPrice,
-												quotes[i].regularMarketPrice as number
+												quotes[i].price as number
 											)}
 										</TableCell>
-										<TableCell className="text-right flex items-center justify-end">
-											{/* <Link href={`/client/${data.id}`}>
-												<Eye />
-											</Link> */}
+										<TableCell className="text-right flex items-center justify-end gap-3">
+											<Dialog>
+												<DialogTrigger asChild>
+													<Button>
+														<Pencil size={20} />
+													</Button>
+												</DialogTrigger>
+												<DialogContent>
+													<DialogHeader>
+														<DialogTitle>Edit Holding</DialogTitle>
+													</DialogHeader>
+
+													<EditHoldingForm
+														portfolioId={user.currentPortfolioId as string}
+														userId={params.id}
+														holding={data}
+													/>
+												</DialogContent>
+											</Dialog>
+
+											<Button variant="destructive">
+												<Link href={`/client/${data.id}`}>
+													<Trash2 size={20} />
+												</Link>
+											</Button>
 										</TableCell>
 									</TableRow>
 								);
