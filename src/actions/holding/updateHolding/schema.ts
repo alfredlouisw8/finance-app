@@ -8,5 +8,5 @@ export const UpdateHolding = z.object({
 	amount: z.number(),
 	type: z.nativeEnum(HoldingType),
 	userId: z.string(),
-	holdingId: z.string().optional(),
+	holdingId: z.string(),
 });

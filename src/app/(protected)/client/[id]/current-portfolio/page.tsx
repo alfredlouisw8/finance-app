@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import HoldingForm from "./_components/HoldingForm";
+import HoldingForm from "../_components/HoldingForm";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -22,10 +22,16 @@ import { Role } from "@/types/User";
 import getUserDetail from "@/actions/users/getUserDetail";
 import yahooFinance from "yahoo-finance2";
 import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
-import { numberWithCommas } from "@/utils/functions";
+import {
+	calculatePerformance,
+	getHoldingsData,
+	getTotalValue,
+	numberWithCommas,
+} from "@/utils/functions";
 import { Pencil, Trash2 } from "lucide-react";
-import NewHoldingForm from "./_components/NewHoldingForm";
-import EditHoldingForm from "./_components/EditHoldingForm";
+import NewHoldingForm from "../_components/NewHoldingForm";
+import EditHoldingForm from "../_components/EditHoldingForm";
+import DeleteHoldingForm from "../_components/DeleteHoldingForm";
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const user = await getUserDetail(params.id);
@@ -38,45 +44,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 		user.currentPortfolioId as string
 	);
 
-	const quotes = await Promise.all(
-		holdings.map(async (holding) => {
-			const result = await yahooFinance.quoteSummary(holding.ticker, {
-				modules: ["price"],
-			});
-			return {
-				name: result.price?.longName,
-				price: result.price?.regularMarketPrice,
-			};
-		})
-	);
-
-	const USDIDR = await yahooFinance.quote("IDR=X");
-
-	function calculatePerformance(startPrice: number, endPrice: number) {
-		if (!endPrice || !startPrice) {
-			return "N/A";
-		}
-
-		return ((endPrice / startPrice - 1) * 100).toFixed(2) + "%";
-	}
-
-	function getTotalValue(
-		lastPrice: number | undefined,
-		amount: number,
-		type: HoldingType
-	) {
-		if (!lastPrice) {
-			return "N/A";
-		}
-		let totalValue;
-		totalValue = lastPrice * amount;
-
-		if (type === HoldingType.US_STOCK) {
-			totalValue = lastPrice * amount * USDIDR.regularMarketPrice!;
-		}
-
-		return `IDR ${numberWithCommas(parseInt(totalValue.toFixed(2)))}`;
-	}
+	const quotes = await getHoldingsData(holdings);
 
 	return (
 		<Card>
@@ -116,24 +84,24 @@ export default async function Page({ params }: { params: { id: string } }) {
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{holdings.length > 0 ? (
-							holdings.map((data, i) => {
+						{quotes.length > 0 ? (
+							quotes.map((data, i) => {
 								return (
 									<TableRow key={data.id}>
 										<TableCell className="font-medium">{i + 1}</TableCell>
-										<TableCell>{quotes[i].name}</TableCell>
+										<TableCell>{data.name}</TableCell>
 										<TableCell>{data.type}</TableCell>
 										<TableCell>{data.ticker}</TableCell>
 										<TableCell>{data.amount}</TableCell>
 										<TableCell>{data.averageBuyPrice}</TableCell>
-										<TableCell>{quotes[i].price}</TableCell>
+										<TableCell>{data.lastPrice}</TableCell>
 										<TableCell>
-											{getTotalValue(quotes[i].price, data.amount, data.type)}
+											{`IDR ${numberWithCommas(data.value)}`}
 										</TableCell>
 										<TableCell>
 											{calculatePerformance(
 												data.averageBuyPrice,
-												quotes[i].price as number
+												data.lastPrice as number
 											)}
 										</TableCell>
 										<TableCell className="text-right flex items-center justify-end gap-3">
@@ -156,11 +124,24 @@ export default async function Page({ params }: { params: { id: string } }) {
 												</DialogContent>
 											</Dialog>
 
-											<Button variant="destructive">
-												<Link href={`/client/${data.id}`}>
-													<Trash2 size={20} />
-												</Link>
-											</Button>
+											<Dialog>
+												<DialogTrigger asChild>
+													<Button variant="destructive">
+														<Trash2 size={20} />
+													</Button>
+												</DialogTrigger>
+												<DialogContent>
+													<DialogHeader>
+														<DialogTitle>Delete Holding</DialogTitle>
+													</DialogHeader>
+
+													<DeleteHoldingForm
+														userId={params.id}
+														portfolioId={user.currentPortfolioId as string}
+														holdingId={data.id}
+													/>
+												</DialogContent>
+											</Dialog>
 										</TableCell>
 									</TableRow>
 								);

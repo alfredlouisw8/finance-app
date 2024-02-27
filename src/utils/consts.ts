@@ -183,3 +183,18 @@ export const riskProfileSurvey = [
 		],
 	},
 ];
+
+export const pieChartColors = [
+	"#FF6666",
+	"#FFB266",
+	"#FFFF66",
+	"#B2FF66",
+	"#66FF66",
+	"#66FFB2",
+	"#66FFFF",
+	"#66B2FF",
+	"#6666FF",
+	"#B266FF",
+	"#FF66FF",
+	"#FF66B2",
+];

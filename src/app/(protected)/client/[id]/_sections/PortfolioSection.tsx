@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/table";
 import { Role } from "@/types/User";
 import { User } from "@prisma/client";
-import PortfolioForm from "./PortfolioForm";
+import PortfolioForm from "../_components/PortfolioForm";
 import getEquityRiskPremium from "@/actions/applicationSetting/getEquityRiskPremium";
 import { numberWithCommas } from "@/utils/functions";
 
