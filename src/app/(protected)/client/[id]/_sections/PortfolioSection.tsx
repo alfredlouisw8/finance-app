@@ -19,7 +19,18 @@ import { Role } from "@/types/User";
 import { User } from "@prisma/client";
 import PortfolioForm from "../_components/PortfolioForm";
 import getEquityRiskPremium from "@/actions/applicationSetting/getEquityRiskPremium";
-import { numberWithCommas } from "@/utils/functions";
+import {
+	calculatePerformance,
+	getHoldingsData,
+	getPortfolioBetaValue,
+	getPricesFromChartData,
+	numberWithCommas,
+} from "@/utils/functions";
+import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
+import getRiskFreeRate from "@/actions/applicationSetting/getRiskFreeRate";
+import yahooFinance from "yahoo-finance2";
+import { sub } from "date-fns";
+import Link from "next/link";
 
 type Props = {
 	user: User;
@@ -28,6 +39,27 @@ type Props = {
 
 export default async function PortfolioSection({ user, currentRole }: Props) {
 	const equityRiskPremium = await getEquityRiskPremium();
+	const riskFreeRate = await getRiskFreeRate();
+
+	const holdings = await getHoldingByPortfolio(
+		user.currentPortfolioId as string
+	);
+
+	const holdingsData = await getHoldingsData(holdings);
+
+	const currentTotalPortfolioValue = holdingsData.reduce(
+		(acc, val) => acc + val.value,
+		0
+	);
+
+	const portfolioBeta = await getPortfolioBetaValue(
+		holdingsData,
+		currentTotalPortfolioValue
+	);
+
+	const expectedReturn =
+		parseFloat(riskFreeRate?.value!) +
+		portfolioBeta * parseFloat(equityRiskPremium?.value!);
 
 	return (
 		<Card>
@@ -35,21 +67,28 @@ export default async function PortfolioSection({ user, currentRole }: Props) {
 				<CardTitle>Portfolio</CardTitle>
 
 				{currentRole === Role.ADVISOR && (
-					<Dialog>
-						<DialogTrigger asChild>
-							<Button>Edit Portfolio</Button>
-						</DialogTrigger>
-						<DialogContent>
-							<DialogHeader>
-								<DialogTitle>Portfolio Contribution</DialogTitle>
-							</DialogHeader>
+					<div className="flex items-center gap-5">
+						<Dialog>
+							<DialogTrigger asChild>
+								<Button>Edit Portfolio</Button>
+							</DialogTrigger>
+							<DialogContent>
+								<DialogHeader>
+									<DialogTitle>Portfolio Contribution</DialogTitle>
+								</DialogHeader>
 
-							<PortfolioForm
-								user={user}
-								equityRiskPremium={equityRiskPremium?.value}
-							/>
-						</DialogContent>
-					</Dialog>
+								<PortfolioForm
+									user={user}
+									equityRiskPremium={equityRiskPremium?.value}
+									riskFreeRate={riskFreeRate?.value}
+								/>
+							</DialogContent>
+						</Dialog>
+
+						<Link href={`/client/${user.id}/holding-universe`}>
+							<Button>Edit Universe</Button>
+						</Link>
+					</div>
 				)}
 			</CardHeader>
 			<CardContent>
@@ -70,28 +109,47 @@ export default async function PortfolioSection({ user, currentRole }: Props) {
 							</TableRow>
 							<TableRow>
 								<TableCell>Return</TableCell>
-								<TableCell className="text-right">-</TableCell>
+								<TableCell className="text-right">
+									{calculatePerformance(
+										user.portfolioContribution as number,
+										currentTotalPortfolioValue
+									)}
+								</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Price Return</TableCell>
-								<TableCell className="text-right">-</TableCell>
+								<TableCell className="text-right">
+									{numberWithCommas(
+										Math.round(currentTotalPortfolioValue) -
+											user.portfolioContribution!
+									)}
+								</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Expected Return</TableCell>
-								<TableCell className="text-right">-</TableCell>
+								<TableCell className="text-right">
+									{riskFreeRate?.value && equityRiskPremium?.value
+										? expectedReturn.toFixed(2) + "%"
+										: "-"}
+									{}
+								</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Risk Free Rate</TableCell>
-								<TableCell className="text-right">-</TableCell>
+								<TableCell className="text-right">
+									{riskFreeRate?.value + "%" || "-"}
+								</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Beta</TableCell>
-								<TableCell className="text-right">-</TableCell>
+								<TableCell className="text-right">
+									{portfolioBeta.toFixed(2)}
+								</TableCell>
 							</TableRow>
 							<TableRow>
 								<TableCell>Equity Risk Premium</TableCell>
 								<TableCell className="text-right">
-									{equityRiskPremium?.value || "-"}
+									{equityRiskPremium?.value + "%" || "-"}
 								</TableCell>
 							</TableRow>
 						</TableBody>

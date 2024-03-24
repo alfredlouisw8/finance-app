@@ -21,7 +21,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
 	let user;
 
-	const { portfolioContribution, equityRiskPremium, clientId } = data;
+	const { portfolioContribution, equityRiskPremium, clientId, riskFreeRate } =
+		data;
 
 	try {
 		user = await prisma.user.update({
@@ -43,6 +44,19 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 			create: {
 				name: "equityRiskPremium",
 				value: equityRiskPremium + "",
+			},
+		});
+
+		await prisma.applicationSetting.upsert({
+			where: {
+				name: "riskFreeRate",
+			},
+			update: {
+				value: riskFreeRate + "",
+			},
+			create: {
+				name: "riskFreeRate",
+				value: riskFreeRate + "",
 			},
 		});
 	} catch (error) {

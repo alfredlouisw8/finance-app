@@ -26,15 +26,21 @@ const formSchema = UpdatePortfolioContribution;
 type Props = {
 	user: User;
 	equityRiskPremium?: string;
+	riskFreeRate?: string;
 };
 
-export default function PortfolioForm({ user, equityRiskPremium }: Props) {
+export default function PortfolioForm({
+	user,
+	equityRiskPremium,
+	riskFreeRate,
+}: Props) {
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			portfolioContribution: user.portfolioContribution || 0,
 			clientId: user.id,
-			equityRiskPremium: equityRiskPremium,
+			equityRiskPremium,
+			riskFreeRate,
 		},
 	});
 
@@ -98,6 +104,20 @@ export default function PortfolioForm({ user, equityRiskPremium }: Props) {
 									placeholder="Equity Risk Premium"
 									{...field}
 								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name="riskFreeRate"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Risk Free Rate</FormLabel>
+							<FormControl>
+								<Input type="number" placeholder="Risk Free Rate" {...field} />
 							</FormControl>
 							<FormMessage />
 						</FormItem>
