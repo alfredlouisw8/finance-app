@@ -97,7 +97,7 @@ export default function PortfolioForm({
 					name="equityRiskPremium"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Equity Risk Premium</FormLabel>
+							<FormLabel>Equity Risk Premium (%)</FormLabel>
 							<FormControl>
 								<Input
 									type="number"
@@ -115,7 +115,7 @@ export default function PortfolioForm({
 					name="riskFreeRate"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Risk Free Rate</FormLabel>
+							<FormLabel>Risk Free Rate (%)</FormLabel>
 							<FormControl>
 								<Input type="number" placeholder="Risk Free Rate" {...field} />
 							</FormControl>

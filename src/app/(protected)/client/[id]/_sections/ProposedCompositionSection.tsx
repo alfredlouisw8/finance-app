@@ -11,15 +11,13 @@ import {
 } from "@/components/ui/dialog";
 import { Role } from "@/types/User";
 import { pieChartColors } from "@/utils/consts";
-import {
-	getHoldingsData,
-	getTotalValue,
-	optimizePortfolio,
-} from "@/utils/functions";
+import { getHoldingsData, getTotalValue } from "@/utils/functions";
 import { User } from "@prisma/client";
 import Link from "next/link";
 import yahooFinance from "yahoo-finance2";
 import OptimizePortfolioForm from "../_components/OptimizePortfolioForm";
+import getHoldingUniverse from "@/actions/holdingUniverse/getHoldingUniverse";
+import getRiskFreeRate from "@/actions/applicationSetting/getRiskFreeRate";
 
 type Props = {
 	user: User;
@@ -47,6 +45,9 @@ export default async function ProposedCompositionSection({
 		],
 	};
 
+	const holdingUniverse = await getHoldingUniverse(user.id);
+	const riskFreeRate = await getRiskFreeRate();
+
 	return (
 		<Card>
 			<CardHeader className="flex items-center justify-between flex-row">
@@ -64,7 +65,11 @@ export default async function ProposedCompositionSection({
 										<DialogTitle>Portfolio Contribution</DialogTitle>
 									</DialogHeader>
 
-									<OptimizePortfolioForm userId={user.id} />
+									<OptimizePortfolioForm
+										user={user}
+										holdingUniverse={holdingUniverse}
+										riskFreeRate={riskFreeRate?.value as string}
+									/>
 								</DialogContent>
 							</Dialog>
 						</div>
