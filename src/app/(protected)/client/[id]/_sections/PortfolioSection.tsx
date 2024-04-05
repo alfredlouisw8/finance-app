@@ -108,6 +108,12 @@ export default async function PortfolioSection({ user, currentRole }: Props) {
 								</TableCell>
 							</TableRow>
 							<TableRow>
+								<TableCell>Current Value</TableCell>
+								<TableCell className="text-right">
+									{numberWithCommas(currentTotalPortfolioValue) || "-"}
+								</TableCell>
+							</TableRow>
+							<TableRow>
 								<TableCell>Return</TableCell>
 								<TableCell className="text-right">
 									{calculatePerformance(

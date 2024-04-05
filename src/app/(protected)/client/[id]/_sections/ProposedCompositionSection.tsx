@@ -82,9 +82,11 @@ export default async function ProposedCompositionSection({
 			<CardContent>
 				{quotes.length === 0 && <div>N/A</div>}
 				{quotes.length > 0 && (
-					<div className="flex justify-center max-w-[300px] mx-auto">
-						<PieChart data={pieChartData} />
-					</div>
+					<>
+						<div className="flex justify-center max-w-[300px] mx-auto">
+							<PieChart data={pieChartData} />
+						</div>
+					</>
 				)}
 			</CardContent>
 		</Card>

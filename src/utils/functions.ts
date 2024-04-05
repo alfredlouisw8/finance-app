@@ -17,7 +17,7 @@ export const getRiskProfileResult = (totalPoint: number): RiskProfile => {
 };
 
 export function numberWithCommas(x: number | null) {
-	if (!x) {
+	if (x === null) {
 		return undefined;
 	}
 	return x.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -211,6 +211,33 @@ export async function getHoldingsData(
 			};
 		})
 	);
+}
+
+export async function getHoldingData(holding: Holding): Promise<HoldingData> {
+	const USDIDR = await yahooFinance.quote("IDR=X");
+
+	const result = await yahooFinance.quoteSummary(holding.ticker, {
+		modules: ["price"],
+	});
+	return {
+		...holding,
+		name: result.price?.longName,
+		lastPrice: result.price?.regularMarketPrice,
+		value: getTotalValue(
+			result.price?.regularMarketPrice!,
+			holding.amount,
+			holding.type,
+			USDIDR.regularMarketPrice!
+		),
+	};
+}
+
+export function getHoldingType(ticker: string) {
+	if (ticker.includes(".JK")) {
+		return HoldingType.ID_STOCK;
+	} else {
+		return HoldingType.US_STOCK;
+	}
 }
 
 // Define a function to calculate logarithmic returns

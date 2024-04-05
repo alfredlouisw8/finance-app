@@ -28,6 +28,8 @@ import { format, sub } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { pieChartColors } from "@/utils/consts";
 import PieChart from "@/components/PieChart";
+import optimziePortfolio from "@/actions/portfolio/optimizePortfolio";
+import optimizePortfolio from "@/actions/portfolio/optimizePortfolio";
 
 type Props = {
 	user: User;
@@ -73,9 +75,18 @@ export default function OptimizePortfolioForm({
 					max_allocation: values.maxAllocation / 100,
 				}
 			);
-			setOptimizedWeight(JSON.parse(response.data));
+			await optimizePortfolio(
+				response.data,
+				user.currentPortfolioId as string,
+				user.proposedPortfolioId as string,
+				user.id
+			);
 
-			return response.data;
+			toast({
+				title: "Portfolio optimized successfully",
+				variant: "default",
+			});
+			closeDialogRef.current?.click();
 		} catch (error) {
 			if (axios.isAxiosError(error)) {
 				console.error("Axios error:", error.response?.data);
