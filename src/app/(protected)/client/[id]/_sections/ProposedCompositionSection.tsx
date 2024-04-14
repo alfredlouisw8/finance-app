@@ -1,7 +1,13 @@
 import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
 import PieChart from "@/components/PieChart";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import {
 	Dialog,
 	DialogContent,
@@ -11,13 +17,19 @@ import {
 } from "@/components/ui/dialog";
 import { Role } from "@/types/User";
 import { pieChartColors } from "@/utils/consts";
-import { getHoldingsData, getTotalValue } from "@/utils/functions";
+import {
+	calculatePercentage,
+	getHoldingsData,
+	getTotalValue,
+} from "@/utils/functions";
 import { User } from "@prisma/client";
 import Link from "next/link";
 import yahooFinance from "yahoo-finance2";
 import OptimizePortfolioForm from "../_components/OptimizePortfolioForm";
 import getHoldingUniverse from "@/actions/holdingUniverse/getHoldingUniverse";
 import getRiskFreeRate from "@/actions/applicationSetting/getRiskFreeRate";
+import getPortfolio from "@/actions/portfolio/getPortfolio";
+import { format } from "date-fns";
 
 type Props = {
 	user: User;
@@ -32,14 +44,30 @@ export default async function ProposedCompositionSection({
 		user.proposedPortfolioId as string
 	);
 
+	const portfolio = await getPortfolio(user.proposedPortfolioId as string);
+
 	const quotes = await getHoldingsData(holdings);
 
+	const currentTotalPortfolioValue =
+		quotes.reduce((acc, val) => acc + val.value, 0) + portfolio?.cash!;
+
+	const percentageData = [
+		...quotes.map((quote) => ({
+			ticker: quote.ticker,
+			value: calculatePercentage(quote.value, currentTotalPortfolioValue),
+		})),
+		{
+			ticker: "Cash",
+			value: calculatePercentage(portfolio?.cash!, currentTotalPortfolioValue),
+		},
+	];
+
 	const pieChartData = {
-		labels: quotes.map((quote) => quote.ticker),
+		labels: percentageData.map((quote) => quote.ticker),
 		datasets: [
 			{
 				label: "percentage",
-				data: quotes.map((quote) => quote.value),
+				data: percentageData.map((quote) => quote.value),
 				backgroundColor: pieChartColors,
 			},
 		],
@@ -51,7 +79,13 @@ export default async function ProposedCompositionSection({
 	return (
 		<Card>
 			<CardHeader className="flex items-center justify-between flex-row">
-				<CardTitle>Proposed Composition</CardTitle>
+				<div className="flex flex-col gap-3">
+					<CardTitle>Proposed Composition</CardTitle>
+					<CardDescription>
+						Last Updated:{" "}
+						{format(portfolio?.updatedAt!, "dd MMM yyyy, hh:mm a")}
+					</CardDescription>
+				</div>
 
 				<div className="flex items-center gap-5">
 					{currentRole === Role.ADVISOR && (
@@ -62,7 +96,7 @@ export default async function ProposedCompositionSection({
 								</DialogTrigger>
 								<DialogContent>
 									<DialogHeader>
-										<DialogTitle>Portfolio Contribution</DialogTitle>
+										<DialogTitle>Optimize Portfolio</DialogTitle>
 									</DialogHeader>
 
 									<OptimizePortfolioForm

@@ -44,6 +44,8 @@ export const authOptions: NextAuthOptions = {
 				//@ts-ignore
 				session.user.role = user.role ?? Role.ADVISOR;
 				session.user.id = user.id;
+				//@ts-ignore
+				session.user.isAdmin = user.isAdmin;
 			}
 
 			return session;

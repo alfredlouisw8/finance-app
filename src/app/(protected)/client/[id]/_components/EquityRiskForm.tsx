@@ -1,7 +1,7 @@
 "use client";
 
-import { updatePortfolioCash } from "@/actions/portfolio/updatePortfolioCash";
-import { UpdatePortfolioCash } from "@/actions/portfolio/updatePortfolioCash/schema";
+import { updateEquityRisk } from "@/actions/applicationSetting/updateEquityRisk";
+import { UpdateEquityRisk } from "@/actions/applicationSetting/updateEquityRisk/schema";
 import NumberInput from "@/components/form/NumberInput";
 import { Button } from "@/components/ui/button";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
@@ -21,28 +21,32 @@ import { User } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-const formSchema = UpdatePortfolioCash;
+const formSchema = UpdateEquityRisk;
 
 type Props = {
-	portfolioId: string;
-	clientId: string;
-	cash: number;
+	user: User;
+	equityRiskPremium?: string;
+	riskFreeRate?: string;
 };
 
-export default function PortfolioForm({ portfolioId, cash, clientId }: Props) {
+export default function EquityRiskForm({
+	user,
+	equityRiskPremium,
+	riskFreeRate,
+}: Props) {
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			cash,
-			clientId,
-			portfolioId,
+			clientId: user.id,
+			equityRiskPremium,
+			riskFreeRate,
 		},
 	});
 
-	const { execute, fieldErrors, isLoading } = useAction(updatePortfolioCash, {
+	const { execute, fieldErrors, isLoading } = useAction(updateEquityRisk, {
 		onSuccess: () => {
 			toast({
-				title: "Portfolio cash successfully updated",
+				title: "Equity risk successfully updated",
 			});
 		},
 		onError: (error) => {
@@ -72,12 +76,30 @@ export default function PortfolioForm({ portfolioId, cash, clientId }: Props) {
 			<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 				<FormField
 					control={form.control}
-					name="cash"
+					name="equityRiskPremium"
 					render={({ field }) => (
 						<FormItem>
-							<FormLabel>Cash</FormLabel>
+							<FormLabel>Equity Risk Premium (%)</FormLabel>
 							<FormControl>
-								<NumberInput control={form.control} {...field} />
+								<Input
+									type="number"
+									placeholder="Equity Risk Premium"
+									{...field}
+								/>
+							</FormControl>
+							<FormMessage />
+						</FormItem>
+					)}
+				/>
+
+				<FormField
+					control={form.control}
+					name="riskFreeRate"
+					render={({ field }) => (
+						<FormItem>
+							<FormLabel>Risk Free Rate (%)</FormLabel>
+							<FormControl>
+								<Input type="number" placeholder="Risk Free Rate" {...field} />
 							</FormControl>
 							<FormMessage />
 						</FormItem>

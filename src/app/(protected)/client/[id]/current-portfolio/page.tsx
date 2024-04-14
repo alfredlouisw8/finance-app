@@ -40,6 +40,8 @@ import EditHoldingForm from "../_components/EditHoldingForm";
 import DeleteHoldingForm from "../_components/DeleteHoldingForm";
 import PortfolioHoldingTable from "../_components/PortfolioHoldingTable";
 import getPortfolio from "@/actions/portfolio/getPortfolio";
+import PortfolioForm from "../_components/PortfolioForm";
+import { format } from "date-fns";
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const user = await getUserDetail(params.id);
@@ -65,23 +67,45 @@ export default async function Page({ params }: { params: { id: string } }) {
 			<CardHeader className="flex flex-row justify-between items-center">
 				<div className="flex flex-col">
 					<CardTitle>Current Portfolio Composition</CardTitle>
+					<CardDescription>
+						Last Updated:{" "}
+						{format(portfolio?.updatedAt!, "dd MMM yyyy, hh:mm a")}
+					</CardDescription>
 				</div>
 
-				<Dialog>
-					<DialogTrigger asChild>
-						<Button>Create Holding</Button>
-					</DialogTrigger>
-					<DialogContent>
-						<DialogHeader>
-							<DialogTitle>New Holding</DialogTitle>
-						</DialogHeader>
+				<div className="flex items-center gap-5">
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button>Update Cash</Button>
+						</DialogTrigger>
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>Update Portfolio Cash</DialogTitle>
+							</DialogHeader>
 
-						<NewHoldingForm
-							portfolioId={user.currentPortfolioId as string}
-							userId={params.id}
-						/>
-					</DialogContent>
-				</Dialog>
+							<PortfolioForm
+								portfolioId={portfolio?.id as string}
+								cash={portfolio?.cash as number}
+								clientId={params.id}
+							/>
+						</DialogContent>
+					</Dialog>
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button>Create Holding</Button>
+						</DialogTrigger>
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>New Holding</DialogTitle>
+							</DialogHeader>
+
+							<NewHoldingForm
+								portfolioId={user.currentPortfolioId as string}
+								userId={params.id}
+							/>
+						</DialogContent>
+					</Dialog>
+				</div>
 			</CardHeader>
 			<CardContent>
 				<p>Cash: IDR {numberWithCommas(portfolio?.cash as number)}</p>

@@ -6,35 +6,36 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "@/hooks/useAction";
 import { toast } from "@/components/ui/use-toast";
 import { z } from "zod";
-import { DeleteHolding } from "@/actions/holding/deleteHolding/schema";
-import { deleteHolding } from "@/actions/holding/deleteHolding";
+import { acceptPortfolioOptimization } from "@/actions/portfolio/acceptPortfolioOptimization";
+import { AcceptPortfolioOptimization } from "@/actions/portfolio/acceptPortfolioOptimization/schema";
+import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 
 type Props = {
-	portfolioId: string;
-	userId: string;
-	holdingId: string;
+	currentPortfolioId: string;
+	proposedPortfolioId: string;
+	clientId: string;
 };
 
-export default function DeleteHoldingForm({
-	portfolioId,
-	userId,
-	holdingId,
+export default function AcceptOptimizationForm({
+	currentPortfolioId,
+	proposedPortfolioId,
+	clientId,
 }: Props) {
-	const formSchema = DeleteHolding;
+	const formSchema = AcceptPortfolioOptimization;
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
-			portfolioId,
-			userId,
-			holdingId,
+			currentPortfolioId,
+			proposedPortfolioId,
+			clientId,
 		},
 	});
 
-	const { execute, fieldErrors } = useAction(deleteHolding, {
+	const { execute, fieldErrors } = useAction(acceptPortfolioOptimization, {
 		onSuccess: () => {
 			toast({
-				title: `Holding successfully deleted`,
+				title: `Portfolio optimization accepted`,
 			});
 		},
 		onError: (error) => {
@@ -63,13 +64,23 @@ export default function DeleteHoldingForm({
 		<>
 			<Form {...form}>
 				<form onSubmit={form.handleSubmit(onSubmit)}>
-					<input type="hidden" name="holdingId" value={holdingId} />
-					<input type="hidden" name="portfolioId" value={portfolioId} />
-					<input type="hidden" name="userId" value={userId} />
+					<input
+						type="hidden"
+						name="currentPortfolioId"
+						value={currentPortfolioId}
+					/>
+					<input
+						type="hidden"
+						name="proposedPortfolioId"
+						value={proposedPortfolioId}
+					/>
+					<input type="hidden" name="clientId" value={clientId} />
 					<p>Are you sure?</p>
-					<div className="flex justify-end">
-						<Button type="submit">Continue</Button>
-					</div>
+					<DialogFooter>
+						<DialogClose asChild>
+							<Button type="submit">Continue</Button>
+						</DialogClose>
+					</DialogFooter>
 				</form>
 			</Form>
 		</>

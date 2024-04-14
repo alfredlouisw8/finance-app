@@ -188,6 +188,14 @@ export function calculatePerformance(startPrice: number, endPrice: number) {
 	return ((endPrice / startPrice - 1) * 100).toFixed(2) + "%";
 }
 
+export function calculatePercentage(value: number, totalValue: number) {
+	if (!value || !totalValue) {
+		return 0;
+	}
+
+	return parseFloat(((value / totalValue) * 100).toFixed(2));
+}
+
 export async function getHoldingsData(
 	holdings: Holding[]
 ): Promise<HoldingData[]> {
@@ -202,6 +210,12 @@ export async function getHoldingsData(
 				...holding,
 				name: result.price?.longName,
 				lastPrice: result.price?.regularMarketPrice,
+				initialValue: getTotalValue(
+					holding.averageBuyPrice,
+					holding.amount,
+					holding.type,
+					USDIDR.regularMarketPrice!
+				),
 				value: getTotalValue(
 					result.price?.regularMarketPrice!,
 					holding.amount,
@@ -223,6 +237,12 @@ export async function getHoldingData(holding: Holding): Promise<HoldingData> {
 		...holding,
 		name: result.price?.longName,
 		lastPrice: result.price?.regularMarketPrice,
+		initialValue: getTotalValue(
+			holding.averageBuyPrice,
+			holding.amount,
+			holding.type,
+			USDIDR.regularMarketPrice!
+		),
 		value: getTotalValue(
 			result.price?.regularMarketPrice!,
 			holding.amount,

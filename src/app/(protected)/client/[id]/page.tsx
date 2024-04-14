@@ -29,7 +29,11 @@ export default async function Page({ params }: { params: { id: string } }) {
 				currentRole={session?.user.role as Role}
 			/>
 
-			<PortfolioSection user={user} currentRole={session?.user.role as Role} />
+			<PortfolioSection
+				user={user}
+				currentRole={session?.user.role as Role}
+				isAdmin={session?.user.isAdmin as boolean}
+			/>
 
 			<div className="grid grid-cols-2 gap-5">
 				<CurrentCompositionSection

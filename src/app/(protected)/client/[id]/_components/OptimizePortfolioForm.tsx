@@ -28,8 +28,7 @@ import { format, sub } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { pieChartColors } from "@/utils/consts";
 import PieChart from "@/components/PieChart";
-import optimziePortfolio from "@/actions/portfolio/optimizePortfolio";
-import optimizePortfolio from "@/actions/portfolio/optimizePortfolio";
+import { optimizePortfolio } from "@/actions/portfolio/optimizePortfolio";
 
 type Props = {
 	user: User;
@@ -75,12 +74,13 @@ export default function OptimizePortfolioForm({
 					max_allocation: values.maxAllocation / 100,
 				}
 			);
-			await optimizePortfolio(
-				response.data,
-				user.currentPortfolioId as string,
-				user.proposedPortfolioId as string,
-				user.id
-			);
+
+			await optimizePortfolio({
+				optimizedWeightJson: response.data,
+				currentPortfolioId: user.currentPortfolioId as string,
+				proposedPortfolioId: user.proposedPortfolioId as string,
+				clientId: user.id,
+			});
 
 			toast({
 				title: "Portfolio optimized successfully",
@@ -99,23 +99,6 @@ export default function OptimizePortfolioForm({
 			});
 		}
 	}
-
-	const [optimizedWeight, setOptimizedWeight] = useState(null);
-
-	const pieChartData = {
-		labels: optimizedWeight
-			? Object.keys(optimizedWeight).map((key) => key)
-			: [""],
-		datasets: [
-			{
-				label: "percentage",
-				data: optimizedWeight
-					? Object.values(optimizedWeight).map((value) => value)
-					: [0],
-				backgroundColor: pieChartColors,
-			},
-		],
-	};
 
 	return (
 		<>
@@ -180,17 +163,6 @@ export default function OptimizePortfolioForm({
 					</DialogFooter>
 				</form>
 			</Form>
-
-			{optimizedWeight && (
-				<div className="flex flex-col gap-5">
-					<h2 className="text-lg font-bold">Optimized Portfolio</h2>
-
-					<div className="flex justify-center max-w-[300px] mx-auto">
-						{/* @ts-ignore */}
-						<PieChart data={pieChartData} />
-					</div>
-				</div>
-			)}
 		</>
 	);
 }

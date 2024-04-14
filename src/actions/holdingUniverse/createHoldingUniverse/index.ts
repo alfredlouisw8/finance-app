@@ -36,7 +36,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
 		holdingUniverse = await prisma.holdingUniverse.create({
 			data: {
-				ticker,
+				ticker: ticker.toUpperCase(),
 				type,
 				userId,
 			},

@@ -56,7 +56,7 @@ export default function PortfolioHoldingTable({
 								<TableCell>{data.name}</TableCell>
 								<TableCell>{data.ticker}</TableCell>
 								<TableCell>{data.type}</TableCell>
-								<TableCell>{data.amount}</TableCell>
+								<TableCell>{data.amount.toFixed(2)}</TableCell>
 								<TableCell>{data.averageBuyPrice}</TableCell>
 								<TableCell>{data.lastPrice}</TableCell>
 								<TableCell>{`IDR ${numberWithCommas(data.value)}`}</TableCell>

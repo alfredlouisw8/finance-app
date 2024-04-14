@@ -31,13 +31,20 @@ import getRiskFreeRate from "@/actions/applicationSetting/getRiskFreeRate";
 import yahooFinance from "yahoo-finance2";
 import { sub } from "date-fns";
 import Link from "next/link";
+import EquityRiskForm from "../_components/EquityRiskForm";
+import getPortfolio from "@/actions/portfolio/getPortfolio";
 
 type Props = {
 	user: User;
 	currentRole: Role;
+	isAdmin: boolean;
 };
 
-export default async function PortfolioSection({ user, currentRole }: Props) {
+export default async function PortfolioSection({
+	user,
+	currentRole,
+	isAdmin,
+}: Props) {
 	const equityRiskPremium = await getEquityRiskPremium();
 	const riskFreeRate = await getRiskFreeRate();
 
@@ -45,12 +52,16 @@ export default async function PortfolioSection({ user, currentRole }: Props) {
 		user.currentPortfolioId as string
 	);
 
+	const portfolio = await getPortfolio(user.currentPortfolioId as string);
+
 	const holdingsData = await getHoldingsData(holdings);
 
-	const currentTotalPortfolioValue = holdingsData.reduce(
-		(acc, val) => acc + val.value,
-		0
-	);
+	const initialTotalPortfolioValue =
+		holdingsData.reduce((acc, val) => acc + val.initialValue, 0) +
+		portfolio?.cash!;
+
+	const currentTotalPortfolioValue =
+		holdingsData.reduce((acc, val) => acc + val.value, 0) + portfolio?.cash!;
 
 	const portfolioBeta = await getPortfolioBetaValue(
 		holdingsData,
@@ -68,22 +79,24 @@ export default async function PortfolioSection({ user, currentRole }: Props) {
 
 				{currentRole === Role.ADVISOR && (
 					<div className="flex items-center gap-5">
-						<Dialog>
-							<DialogTrigger asChild>
-								<Button>Edit Portfolio</Button>
-							</DialogTrigger>
-							<DialogContent>
-								<DialogHeader>
-									<DialogTitle>Portfolio Contribution</DialogTitle>
-								</DialogHeader>
+						{isAdmin && (
+							<Dialog>
+								<DialogTrigger asChild>
+									<Button>Edit Equity Risk</Button>
+								</DialogTrigger>
+								<DialogContent>
+									<DialogHeader>
+										<DialogTitle>Equity Risk</DialogTitle>
+									</DialogHeader>
 
-								<PortfolioForm
-									user={user}
-									equityRiskPremium={equityRiskPremium?.value}
-									riskFreeRate={riskFreeRate?.value}
-								/>
-							</DialogContent>
-						</Dialog>
+									<EquityRiskForm
+										user={user}
+										equityRiskPremium={equityRiskPremium?.value}
+										riskFreeRate={riskFreeRate?.value}
+									/>
+								</DialogContent>
+							</Dialog>
+						)}
 
 						<Link href={`/client/${user.id}/holding-universe`}>
 							<Button>Edit Universe</Button>
@@ -104,7 +117,7 @@ export default async function PortfolioSection({ user, currentRole }: Props) {
 							<TableRow>
 								<TableCell>Contribution</TableCell>
 								<TableCell className="text-right">
-									{numberWithCommas(user.portfolioContribution) || "-"}
+									{numberWithCommas(initialTotalPortfolioValue) || "-"}
 								</TableCell>
 							</TableRow>
 							<TableRow>
@@ -117,7 +130,7 @@ export default async function PortfolioSection({ user, currentRole }: Props) {
 								<TableCell>Return</TableCell>
 								<TableCell className="text-right">
 									{calculatePerformance(
-										user.portfolioContribution as number,
+										initialTotalPortfolioValue,
 										currentTotalPortfolioValue
 									)}
 								</TableCell>
@@ -127,7 +140,7 @@ export default async function PortfolioSection({ user, currentRole }: Props) {
 								<TableCell className="text-right">
 									{numberWithCommas(
 										Math.round(currentTotalPortfolioValue) -
-											user.portfolioContribution!
+											initialTotalPortfolioValue
 									)}
 								</TableCell>
 							</TableRow>

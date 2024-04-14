@@ -4,37 +4,27 @@ import { revalidatePath } from "next/cache";
 
 import { createSafeAction } from "@/lib/create-safe-action";
 
-import { UpdatePortfolioContribution } from "./schema";
 import { InputType, ReturnType } from "./types";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { UpdateEquityRisk } from "./schema";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 	const session = await getServerSession(authOptions);
 
-	if (!session) {
+	if (session && !session?.user?.isAdmin) {
 		return {
 			error: "Unauthorized",
 		};
 	}
 
-	let user;
+	let equityRisk, riskFree;
 
-	const { portfolioContribution, equityRiskPremium, clientId, riskFreeRate } =
-		data;
+	const { riskFreeRate, equityRiskPremium, clientId } = data;
 
 	try {
-		user = await prisma.user.update({
-			where: {
-				id: clientId,
-			},
-			data: {
-				portfolioContribution: portfolioContribution,
-			},
-		});
-
-		await prisma.applicationSetting.upsert({
+		equityRisk = await prisma.applicationSetting.upsert({
 			where: {
 				name: "equityRiskPremium",
 			},
@@ -47,7 +37,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 			},
 		});
 
-		await prisma.applicationSetting.upsert({
+		riskFree = await prisma.applicationSetting.upsert({
 			where: {
 				name: "riskFreeRate",
 			},
@@ -61,15 +51,12 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 		});
 	} catch (error) {
 		return {
-			error: "Failed to update portfolio contribution",
+			error: "Failed to update equity risk premium and risk free rate.",
 		};
 	}
 
 	revalidatePath(`/client/${clientId}`);
-	return { data: user };
+	return { data: [equityRisk, riskFree] };
 };
 
-export const updatePortfolioContribution = createSafeAction(
-	UpdatePortfolioContribution,
-	handler
-);
+export const updateEquityRisk = createSafeAction(UpdateEquityRisk, handler);

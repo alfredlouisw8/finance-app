@@ -13,6 +13,7 @@ declare module "next-auth" {
 			fixedIncomeAllocation?: number;
 			advisorId: string;
 			id: string;
+			isAdmin: boolean;
 			role?: Role;
 		} & DefaultSession["user"];
 	}

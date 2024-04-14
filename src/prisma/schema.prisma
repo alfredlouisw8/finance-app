@@ -61,7 +61,7 @@ model User {
   riskProfile           String?
   equityAllocation      Int?
   fixedIncomeAllocation Int?
-  portfolioContribution Int?
+  isAdmin               Boolean           @default(false)
   advisorId             String?           @db.ObjectId
   users                 User[]            @relation("Advisors")
   advisor               User?             @relation("Advisors", fields: [advisorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
