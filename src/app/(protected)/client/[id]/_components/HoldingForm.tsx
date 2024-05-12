@@ -1,23 +1,7 @@
 "use client";
 
-import { RefObject, useRef, useState } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-
-import { cn } from "@/lib/utils";
+import { RefObject } from "react";
 import { Button } from "@/components/ui/button";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-} from "@/components/ui/command";
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger,
-} from "@/components/ui/popover";
-import { CreateHolding } from "@/actions/holding/createHolding/schema";
 import {
 	Form,
 	FormControl,
@@ -27,13 +11,6 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { DialogClose, DialogFooter } from "@/components/ui/dialog";
-import { useForm, useFormState } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useAction } from "@/hooks/useAction";
-import { toast } from "@/components/ui/use-toast";
-import { createHolding } from "@/actions/holding/createHolding";
-import { z } from "zod";
-import yahooFinance from "yahoo-finance2";
 import { Input } from "@/components/ui/input";
 import NumberInput from "@/components/form/NumberInput";
 import {
@@ -44,8 +21,6 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Holding, HoldingType } from "@prisma/client";
-import { UpdateHolding } from "@/actions/holding/updateHolding/schema";
-import { updateHolding } from "@/actions/holding/updateHolding";
 
 type Props = {
 	closeDialogRef: RefObject<HTMLButtonElement>;

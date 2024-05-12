@@ -24,34 +24,30 @@ import {
 	getHoldingsData,
 	getTotalValue,
 } from "@/utils/functions";
-import { User } from "@prisma/client";
+import { Portfolio, User } from "@prisma/client";
 import { format } from "date-fns";
 import Link from "next/link";
-import yahooFinance from "yahoo-finance2";
 import AcceptOptimizationForm from "../_components/AcceptOptimizationForm";
+import { HoldingData } from "@/types/Holding";
 
 type Props = {
 	user: User;
 	currentRole: Role;
+	portfolio: Portfolio | null;
+	holdingsData: HoldingData[];
 };
 
 export default async function CurrentCompositionSection({
 	user,
 	currentRole,
+	portfolio,
+	holdingsData,
 }: Props) {
-	const holdings = await getHoldingByPortfolio(
-		user.currentPortfolioId as string
-	);
-
-	const portfolio = await getPortfolio(user.currentPortfolioId as string);
-
-	const quotes = await getHoldingsData(holdings);
-
 	const currentTotalPortfolioValue =
-		quotes.reduce((acc, val) => acc + val.value, 0) + portfolio?.cash!;
+		holdingsData.reduce((acc, val) => acc + val.value, 0) + portfolio?.cash!;
 
 	const percentageData = [
-		...quotes.map((quote) => ({
+		...holdingsData.map((quote) => ({
 			ticker: quote.ticker,
 			value: calculatePercentage(quote.value, currentTotalPortfolioValue),
 		})),
@@ -106,8 +102,8 @@ export default async function CurrentCompositionSection({
 				</div>
 			</CardHeader>
 			<CardContent>
-				{quotes.length === 0 && <div>N/A</div>}
-				{quotes.length > 0 && (
+				{holdingsData.length === 0 && <div>N/A</div>}
+				{holdingsData.length > 0 && (
 					<div className="flex justify-center max-w-[300px] mx-auto">
 						<PieChart data={pieChartData} />
 					</div>

@@ -12,8 +12,6 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import yahooFinance from "yahoo-finance2";
-
 export default async function ProtectedLayout({
 	children,
 }: {

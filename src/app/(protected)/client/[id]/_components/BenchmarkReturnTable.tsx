@@ -6,14 +6,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import {
-	calculateVolatility,
-	getAnnualizedReturn,
-	getBenchmarkTableData,
-	getWeightedPortfolioValue,
-} from "@/utils/functions";
-import { sub } from "date-fns";
-import yahooFinance from "yahoo-finance2";
+import { getBenchmarkTableData } from "@/utils/functions";
 
 type Props = {
 	equities: number;
@@ -24,36 +17,11 @@ export default async function BenchmarkReturnTable({
 	equities,
 	fixedIncome,
 }: Props) {
-	const priceData5year = await yahooFinance.chart("^JKSE", {
-		period1: sub(new Date(), {
-			years: 5,
-		}),
-		interval: "1d",
-	});
-	const priceData3year = await yahooFinance.chart("^JKSE", {
-		period1: sub(new Date(), {
-			years: 3,
-		}),
-		interval: "1d",
-	});
-	const priceData1year = await yahooFinance.chart("^JKSE", {
-		period1: sub(new Date(), {
-			years: 1,
-		}),
-		interval: "1d",
-	});
-
 	const [
 		bondsBenchmarkReturn,
 		equityBenchmarkReturn,
 		portfolioBenchmarkReturn,
-	] = getBenchmarkTableData(
-		priceData1year,
-		priceData3year,
-		priceData5year,
-		equities,
-		fixedIncome
-	);
+	] = await getBenchmarkTableData(equities, fixedIncome);
 
 	return (
 		<div className="flex flex-col gap-5">

@@ -1,3 +1,4 @@
+//@ts-nocheck
 import GoogleProvider from "next-auth/providers/google";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import prisma from "@/lib/prisma";
@@ -8,10 +9,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { NextAuthOptions, Theme } from "next-auth";
 import { createTransport } from "nodemailer";
 import { Role } from "@/types/User";
+import { CustomPrismaAdapter } from "./custom-prisma-adapter";
 
 export const authOptions: NextAuthOptions = {
-	//@ts-ignore
-	adapter: PrismaAdapter(prisma),
+	adapter: CustomPrismaAdapter(prisma),
 	providers: [
 		GoogleProvider({
 			clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -41,10 +42,8 @@ export const authOptions: NextAuthOptions = {
 	callbacks: {
 		async session({ session, token, user }) {
 			if (session?.user) {
-				//@ts-ignore
 				session.user.role = user.role ?? Role.ADVISOR;
 				session.user.id = user.id;
-				//@ts-ignore
 				session.user.isAdmin = user.isAdmin;
 			}
 

@@ -1,8 +1,8 @@
+import YahooFinance from "@/lib/yahoo-finance";
 import { HoldingData } from "@/types/Holding";
 import { RiskProfile } from "@/types/User";
+import { ChartReturnType } from "@/types/YahooFinance";
 import { Holding, HoldingType } from "@prisma/client";
-import { sub } from "date-fns";
-import yahooFinance from "yahoo-finance2";
 
 export const getRiskProfileResult = (totalPoint: number): RiskProfile => {
 	if (totalPoint >= 64) {
@@ -23,28 +23,31 @@ export function numberWithCommas(x: number | null) {
 	return x.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 }
 
-export const getAnnualizedReturn = (chartData: any, numOfYear: number) => {
-	const current = chartData.meta.regularMarketPrice;
-	const start = chartData.meta.chartPreviousClose;
+export const getAnnualizedReturn = (
+	chartData: ChartReturnType,
+	numOfYear: number
+) => {
+	const current = chartData.regularMarketPrice;
+	const start = chartData.chartPreviousClose;
 
 	const annualizedReturn = current / start - 1;
 
 	return annualizedReturn * 100;
 };
 
-export function calculateVolatility(chartData: any) {
+export function calculateVolatility(chartData: ChartReturnType) {
 	// Calculate daily log returns
 	const logReturns = [];
-	for (let i = 1; i < chartData.quotes.length; i++) {
+	for (let i = 1; i < chartData.pricesData.length; i++) {
 		if (
-			chartData.quotes[i].adjclose === null ||
-			chartData.quotes[i - 1].adjclose === null
+			chartData.pricesData[i] === null ||
+			chartData.pricesData[i - 1] === null
 		) {
 			continue;
 		}
 
 		const logReturn = Math.log(
-			chartData.quotes[i].adjclose / chartData.quotes[i - 1].adjclose
+			chartData.pricesData[i] / chartData.pricesData[i - 1]
 		);
 
 		logReturns.push(logReturn);
@@ -93,13 +96,14 @@ export function getWeightedPortfolioVolatility(
 	return portfolioVolatility;
 }
 
-export function getBenchmarkTableData(
-	priceData1year: any,
-	priceData3year: any,
-	priceData5year: any,
+export async function getBenchmarkTableData(
 	equityWeight: number,
 	fixedIncomeWeight: number
 ) {
+	const priceData5year = await YahooFinance.chart("^JKSE", "1d", "5y");
+	const priceData3year = await YahooFinance.chart("^JKSE", "1d", "3y");
+	const priceData1year = await YahooFinance.chart("^JKSE", "1d", "1y");
+
 	const bondsBenchmarkReturn = {
 		return1y: 8,
 		return3y: 9,
@@ -199,57 +203,39 @@ export function calculatePercentage(value: number, totalValue: number) {
 export async function getHoldingsData(
 	holdings: Holding[]
 ): Promise<HoldingData[]> {
-	const USDIDR = await yahooFinance.quote("IDR=X");
+	const tickers = ["IDR=X", ...holdings.map((holding) => holding.ticker)];
 
-	return await Promise.all(
-		holdings.map(async (holding) => {
-			const result = await yahooFinance.quoteSummary(holding.ticker, {
-				modules: ["price"],
-			});
-			return {
-				...holding,
-				name: result.price?.longName,
-				lastPrice: result.price?.regularMarketPrice,
-				initialValue: getTotalValue(
-					holding.averageBuyPrice,
-					holding.amount,
-					holding.type,
-					USDIDR.regularMarketPrice!
-				),
-				value: getTotalValue(
-					result.price?.regularMarketPrice!,
-					holding.amount,
-					holding.type,
-					USDIDR.regularMarketPrice!
-				),
-			};
-		})
-	);
-}
+	const results = await YahooFinance.multiQuote(tickers);
 
-export async function getHoldingData(holding: Holding): Promise<HoldingData> {
-	const USDIDR = await yahooFinance.quote("IDR=X");
+	const { regularMarketPrice: currencyRate } = results[0];
 
-	const result = await yahooFinance.quoteSummary(holding.ticker, {
-		modules: ["price"],
+	return holdings.map((holding, i) => {
+		let currentPrice = results[i + 1].regularMarketPrice;
+		let longName = results[i + 1].longName;
+
+		if (process.env.RAPIDAPI_DUMMY_DATA) {
+			currentPrice = 1000;
+			longName = "Dummy " + i;
+		}
+
+		return {
+			...holding,
+			name: longName,
+			lastPrice: currentPrice,
+			initialValue: getTotalValue(
+				holding.averageBuyPrice,
+				holding.amount,
+				holding.type,
+				currencyRate
+			),
+			value: getTotalValue(
+				currentPrice,
+				holding.amount,
+				holding.type,
+				currencyRate
+			),
+		};
 	});
-	return {
-		...holding,
-		name: result.price?.longName,
-		lastPrice: result.price?.regularMarketPrice,
-		initialValue: getTotalValue(
-			holding.averageBuyPrice,
-			holding.amount,
-			holding.type,
-			USDIDR.regularMarketPrice!
-		),
-		value: getTotalValue(
-			result.price?.regularMarketPrice!,
-			holding.amount,
-			holding.type,
-			USDIDR.regularMarketPrice!
-		),
-	};
 }
 
 export function getHoldingType(ticker: string) {
@@ -309,45 +295,32 @@ function stockBetaAdj(stockPrices: number[], indexPrices: number[]): number {
 	return adjBeta;
 }
 
-export function getPricesFromChartData(chartData: any) {
-	return chartData.quotes.map((data: any) => data.adjclose).filter(Number);
-}
-
 export async function getPortfolioBetaValue(
 	holdingsData: HoldingData[],
 	totalPortfolioValue: number
 ) {
+	const indexPrices = {
+		us: await YahooFinance.chart("^SPX", "1mo", "5y"),
+		id: await YahooFinance.chart("^JKSE", "1mo", "5y"),
+	};
+
 	const betaAdjStocks = await Promise.all(
 		holdingsData.map(async (holding, i) => {
-			const stockChartData = await yahooFinance.chart(holding.ticker, {
-				period1: sub(new Date(), {
-					years: 5,
-				}),
-				interval: "1mo",
-			});
+			const { pricesData: stockPrices } = await YahooFinance.chart(
+				holding.ticker,
+				"1mo",
+				"5y"
+			);
 
-			const stockPrices = getPricesFromChartData(stockChartData);
+			let indexPricesData = indexPrices.id.pricesData;
 
-			let indexTicker = "^JKSE";
-
-			if (holding.type === "US_STOCK") {
-				indexTicker = "^SPX";
-			} else if (holding.type === "ID_STOCK") {
-				indexTicker = "^JKSE";
+			if (holding.type === HoldingType.US_STOCK) {
+				indexPricesData = indexPrices.us.pricesData;
 			}
-
-			const indexChartData = await yahooFinance.chart(indexTicker, {
-				period1: sub(new Date(), {
-					years: 5,
-				}),
-				interval: "1mo",
-			});
-
-			const indexPrices = getPricesFromChartData(indexChartData);
 
 			return {
 				ticker: holding.ticker,
-				betaAdj: stockBetaAdj(stockPrices, indexPrices),
+				betaAdj: stockBetaAdj(stockPrices, indexPricesData),
 				value: holding.value,
 			};
 		})

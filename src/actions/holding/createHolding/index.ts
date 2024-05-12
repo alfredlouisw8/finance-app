@@ -9,8 +9,8 @@ import { InputType, ReturnType } from "./types";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import yahooFinance from "yahoo-finance2";
 import { sub } from "date-fns";
+import YahooFinance from "@/lib/yahoo-finance";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 	const session = await getServerSession(authOptions);
@@ -26,9 +26,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 	const { portfolioId, amount, averageBuyPrice, ticker, type, userId } = data;
 
 	try {
-		const quote = await yahooFinance.quote(ticker, {
-			fields: ["symbol", "displayName"],
-		});
+		const quote = await YahooFinance.quote(ticker);
 
 		if (!quote) {
 			throw new Error("Ticker not found");

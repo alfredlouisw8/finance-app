@@ -198,3 +198,27 @@ export const pieChartColors = [
 	"#FF66FF",
 	"#FF66B2",
 ];
+
+export const quoteDummyData = {
+	regularMarketPrice: { raw: 100 },
+	longName: "Dummy",
+};
+
+export const multiQuoteDummyData = {
+	"0": { regularMarketPrice: { raw: 16000 }, longName: "USDIDR" },
+	"1": { regularMarketPrice: { raw: 100 }, longName: "Dummy" },
+};
+
+export const chartDummyData = {
+	meta: {
+		chartPreviousClose: 100,
+		regularMarketPrice: 200,
+	},
+	indicators: {
+		adjclose: [
+			{
+				adjclose: [100, 120, 130, 140, 150, 160, 170, 180, 190, 200],
+			},
+		],
+	},
+};

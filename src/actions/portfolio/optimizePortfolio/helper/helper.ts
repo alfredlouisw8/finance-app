@@ -1,9 +1,9 @@
 "use server";
 
 import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
+import YahooFinance from "@/lib/yahoo-finance";
 import { getHoldingType, getHoldingsData } from "@/utils/functions";
 import { Holding, HoldingType } from "@prisma/client";
-import yahooFinance from "yahoo-finance2";
 
 export async function calculateTickerValue(
 	key: string,
@@ -13,13 +13,20 @@ export async function calculateTickerValue(
 	const optimizedTickerValue =
 		optimizedWeight[key] * currentTotalPortfolioValue;
 	const tickerType = getHoldingType(key);
-	const result = await yahooFinance.quoteSummary(key, { modules: ["price"] });
-	let tickerValue = result.price?.regularMarketPrice as number;
+
+	const results = await YahooFinance.multiQuote(["IDR=X", key]);
+
+	let tickerValue = results[1].regularMarketPrice; // Second result is the holding data
 	if (tickerType === HoldingType.US_STOCK) {
-		const USDIDR = await yahooFinance.quote("IDR=X");
-		tickerValue *= USDIDR.regularMarketPrice!;
+		const USDIDR = results[0].regularMarketPrice; // First result is the currency rate
+		tickerValue *= USDIDR;
 	}
-	return { tickerValue, optimizedTickerValue, tickerType, result };
+	return {
+		tickerValue,
+		optimizedTickerValue,
+		tickerType,
+		averageBuyPrice: results[1].regularMarketPrice,
+	};
 }
 
 export async function calculateProposedHoldings(
@@ -29,9 +36,10 @@ export async function calculateProposedHoldings(
 ) {
 	let excessCash = 0;
 
+	// can be optimized by using multi quote
 	const proposedHoldings = await Promise.all(
 		Object.keys(optimizedWeight).map(async (key) => {
-			const { tickerValue, optimizedTickerValue, tickerType, result } =
+			const { tickerValue, optimizedTickerValue, tickerType, averageBuyPrice } =
 				await calculateTickerValue(
 					key,
 					optimizedWeight,
@@ -52,7 +60,7 @@ export async function calculateProposedHoldings(
 				ticker: key,
 				amount: roundedTickerAmount,
 				type: tickerType,
-				averageBuyPrice: result.price?.regularMarketPrice || 0,
+				averageBuyPrice,
 				portfolioId: proposedPortfolioId,
 			};
 		})

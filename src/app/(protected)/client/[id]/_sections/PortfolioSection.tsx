@@ -16,45 +16,39 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Role } from "@/types/User";
-import { User } from "@prisma/client";
+import { Portfolio, User } from "@prisma/client";
 import PortfolioForm from "../_components/PortfolioForm";
 import getEquityRiskPremium from "@/actions/applicationSetting/getEquityRiskPremium";
 import {
 	calculatePerformance,
 	getHoldingsData,
 	getPortfolioBetaValue,
-	getPricesFromChartData,
 	numberWithCommas,
 } from "@/utils/functions";
 import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
 import getRiskFreeRate from "@/actions/applicationSetting/getRiskFreeRate";
-import yahooFinance from "yahoo-finance2";
-import { sub } from "date-fns";
 import Link from "next/link";
 import EquityRiskForm from "../_components/EquityRiskForm";
 import getPortfolio from "@/actions/portfolio/getPortfolio";
+import { HoldingData } from "@/types/Holding";
 
 type Props = {
 	user: User;
 	currentRole: Role;
 	isAdmin: boolean;
+	portfolio: Portfolio | null;
+	holdingsData: HoldingData[];
 };
 
 export default async function PortfolioSection({
 	user,
 	currentRole,
 	isAdmin,
+	holdingsData,
+	portfolio,
 }: Props) {
 	const equityRiskPremium = await getEquityRiskPremium();
 	const riskFreeRate = await getRiskFreeRate();
-
-	const holdings = await getHoldingByPortfolio(
-		user.currentPortfolioId as string
-	);
-
-	const portfolio = await getPortfolio(user.currentPortfolioId as string);
-
-	const holdingsData = await getHoldingsData(holdings);
 
 	const initialTotalPortfolioValue =
 		holdingsData.reduce((acc, val) => acc + val.initialValue, 0) +

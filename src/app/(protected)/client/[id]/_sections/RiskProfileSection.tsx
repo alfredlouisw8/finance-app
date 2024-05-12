@@ -1,16 +1,7 @@
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
 	Dialog,
-	DialogClose,
 	DialogContent,
-	DialogDescription,
-	DialogFooter,
 	DialogHeader,
 	DialogTitle,
 	DialogTrigger,
@@ -22,9 +13,6 @@ import PieChart from "../../../../../components/PieChart";
 import { Role } from "@/types/User";
 import { User } from "@prisma/client";
 import AssetAllocationForm from "../_components/AssetAllocationForm";
-import yahooFinance from "yahoo-finance2";
-import { sub } from "date-fns";
-import { getAnnualizedReturn } from "@/utils/functions";
 import { pieChartColors } from "@/utils/consts";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";

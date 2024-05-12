@@ -5,17 +5,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import HoldingForm from "../_components/HoldingForm";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow,
-} from "@/components/ui/table";
 import {
 	Dialog,
 	DialogContent,
@@ -23,10 +13,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { HoldingType, User } from "@prisma/client";
-import { Role } from "@/types/User";
 import getUserDetail from "@/actions/users/getUserDetail";
-import yahooFinance from "yahoo-finance2";
 import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
 import {
 	calculatePerformance,
@@ -34,10 +21,7 @@ import {
 	getTotalValue,
 	numberWithCommas,
 } from "@/utils/functions";
-import { Pencil, Trash2 } from "lucide-react";
 import NewHoldingForm from "../_components/NewHoldingForm";
-import EditHoldingForm from "../_components/EditHoldingForm";
-import DeleteHoldingForm from "../_components/DeleteHoldingForm";
 import PortfolioHoldingTable from "../_components/PortfolioHoldingTable";
 import getPortfolio from "@/actions/portfolio/getPortfolio";
 import PortfolioForm from "../_components/PortfolioForm";
