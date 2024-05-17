@@ -91,7 +91,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 								</DialogHeader>
 
 								<NewHoldingForm
-									portfolioId={user.currentPortfolioId as string}
+									portfolioId={user.proposedPortfolioId as string}
 									userId={params.id}
 								/>
 							</DialogContent>
