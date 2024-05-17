@@ -154,7 +154,9 @@ export default function OptimizePortfolioForm({
 					/>
 
 					<DialogFooter>
-						<Button type="submit">Optimize</Button>
+						<Button type="submit" disabled={form.formState.isSubmitting}>
+							Optimize
+						</Button>
 						<DialogClose asChild>
 							<Button style={{ display: "none" }} ref={closeDialogRef}>
 								Close

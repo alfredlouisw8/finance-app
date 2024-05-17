@@ -222,3 +222,30 @@ export const chartDummyData = {
 		],
 	},
 };
+
+export const timeframes = [
+	{
+		text: "1mo",
+		value: 1,
+	},
+	{
+		text: "3mo",
+		value: 3,
+	},
+	{
+		text: "6mo",
+		value: 6,
+	},
+	{
+		text: "1y",
+		value: 12,
+	},
+	{
+		text: "3y",
+		value: 36,
+	},
+	{
+		text: "5y",
+		value: 60,
+	},
+];

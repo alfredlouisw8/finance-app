@@ -2,7 +2,7 @@ import YahooFinance from "@/lib/yahoo-finance";
 import { HoldingData } from "@/types/Holding";
 import { RiskProfile } from "@/types/User";
 import { ChartReturnType } from "@/types/YahooFinance";
-import { Holding, HoldingType } from "@prisma/client";
+import { Holding, HoldingType, Portfolio } from "@prisma/client";
 
 export const getRiskProfileResult = (totalPoint: number): RiskProfile => {
 	if (totalPoint >= 64) {
@@ -331,4 +331,96 @@ export async function getPortfolioBetaValue(
 		totalPortfolioValue;
 
 	return portfolioBetaAdj;
+}
+
+export function getAllDates(startDate: string | Date, endDate: string | Date) {
+	const dates = [];
+	let currentDate = new Date(startDate);
+	const end = new Date(endDate);
+
+	while (currentDate <= end) {
+		dates.push(currentDate.toISOString().split("T")[0]);
+		currentDate.setDate(currentDate.getDate() + 1);
+	}
+
+	return dates;
+}
+
+export function getDaysBetweenDates(
+	startDate: string | Date,
+	endDate: string | Date
+) {
+	const start = new Date(startDate);
+	const end = new Date(endDate);
+
+	const timeDiff = end.getTime() - start.getTime();
+
+	const daysDiff = timeDiff / (1000 * 60 * 60 * 24);
+	return Math.floor(daysDiff); // Or Math.ceil(daysDiff) if you want to include partial days
+}
+
+export async function getHoldingsPerformance(
+	holdings: Holding[],
+	startingDate: Date | string
+) {
+	const startDate = new Date(startingDate);
+	const endDate = new Date();
+
+	const numOfDays = getDaysBetweenDates(startDate, endDate);
+
+	const performanceData = [];
+
+	// USDIDR rate
+	const results = await YahooFinance.multiQuote(["IDR=X"]);
+	const { regularMarketPrice: currencyRate } = results[0];
+
+	for (const holding of holdings) {
+		const historicalData = await YahooFinance.chart(
+			holding.ticker,
+			"1d",
+			`${numOfDays}d`
+		);
+		const prices = historicalData.pricesData.map((price) =>
+			getTotalValue(price, holding.amount, holding.type, currencyRate)
+		);
+
+		performanceData.push({
+			ticker: holding.ticker,
+			values: prices,
+		});
+	}
+
+	const portfolioPerformance = [];
+	for (let i = 0; i < numOfDays; i++) {
+		let totalPortfolioValue = 0;
+		for (const data of performanceData) {
+			totalPortfolioValue += data.values[i]; // total portfolio value at given day
+		}
+		portfolioPerformance.push(totalPortfolioValue);
+	}
+
+	const startingPortfolioPerformance = portfolioPerformance[0];
+
+	const normalizedPerformance = portfolioPerformance.map(
+		(data) => data / startingPortfolioPerformance
+	);
+
+	const indexPerformance = await getIndexPerformance(numOfDays);
+
+	return {
+		portfolioPerformance: normalizedPerformance,
+		indexPerformance,
+	};
+}
+
+export async function getIndexPerformance(numOfDays: number, index = "^JKSE") {
+	const historicalData = await YahooFinance.chart(index, "1d", `${numOfDays}d`);
+
+	const startingPrice = historicalData.pricesData[0];
+
+	const indexPerformance = historicalData.pricesData.map(
+		(data) => data / startingPrice
+	);
+
+	return indexPerformance;
 }
