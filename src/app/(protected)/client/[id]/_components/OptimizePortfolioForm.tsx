@@ -72,7 +72,7 @@ export default function OptimizePortfolioForm({
 					end_date: format(new Date(), "yyyy-MM-dd"),
 					rf: parseFloat(riskFreeRate) / 100,
 					max_allocation: values.maxAllocation / 100,
-				}
+				},
 			);
 
 			await optimizePortfolio({

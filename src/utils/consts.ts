@@ -185,18 +185,16 @@ export const riskProfileSurvey = [
 ];
 
 export const pieChartColors = [
-	"#FF6666",
-	"#FFB266",
-	"#FFFF66",
-	"#B2FF66",
-	"#66FF66",
-	"#66FFB2",
-	"#66FFFF",
-	"#66B2FF",
-	"#6666FF",
-	"#B266FF",
-	"#FF66FF",
-	"#FF66B2",
+  "#2C3E50", // Dark blue-gray
+  "#8B0000", // Dark red
+  "#4B0082", // Indigo
+  "#006400", // Dark green
+  "#2F4F4F", // Dark slate gray
+  "#483D8B", // Dark slate blue
+  "#8B4513", // Saddle brown
+  "#556B2F", // Dark olive green
+  "#191970", // Midnight blue
+  "#8B008B", // Dark magenta
 ];
 
 export const quoteDummyData = {

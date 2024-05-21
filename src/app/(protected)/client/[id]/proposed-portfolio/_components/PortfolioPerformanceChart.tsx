@@ -43,8 +43,9 @@ export default function PortfolioPerformanceChart({
 	);
 
 	const [chartPerformances, setChartPerformances] = useState({
-		indexPerformance: [1],
+		indexIDPerformance: [1],
 		portfolioPerformance: [1],
+		indexUSPerformance: [1]
 	});
 
 	useEffect(() => {
@@ -82,8 +83,14 @@ export default function PortfolioPerformanceChart({
 		datasets: [
 			{
 				label: "^JKSE",
-				data: chartPerformances.indexPerformance,
+				data: chartPerformances.indexIDPerformance,
 				borderColor: "blue",
+				fill: false,
+			},
+			{
+				label: "^SPX",
+				data: chartPerformances.indexUSPerformance,
+				borderColor: "red",
 				fill: false,
 			},
 			{

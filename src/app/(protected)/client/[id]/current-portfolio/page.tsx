@@ -58,7 +58,8 @@ export default async function Page({ params }: { params: { id: string } }) {
 	const chartPerformances = await getHoldingsPerformance(holdings, startDate);
 
 	// Replace with your actual daily prices
-	const jksePrices = chartPerformances.indexPerformance;
+	const jksePrices = chartPerformances.indexIDPerformance;
+	const spxPrices = chartPerformances.indexUSPerformance;
 	const holdingsPrices = chartPerformances.portfolioPerformance;
 
 	const data = {
@@ -68,6 +69,12 @@ export default async function Page({ params }: { params: { id: string } }) {
 				label: "^JKSE",
 				data: jksePrices,
 				borderColor: "blue",
+				fill: false,
+			},
+			{
+				label: "^SPX",
+				data: spxPrices,
+				borderColor: "red",
 				fill: false,
 			},
 			{

@@ -405,11 +405,13 @@ export async function getHoldingsPerformance(
 		(data) => data / startingPortfolioPerformance
 	);
 
-	const indexPerformance = await getIndexPerformance(numOfDays);
+	const indexIDPerformance = await getIndexPerformance(numOfDays);
+	const indexUSPerformance = await getIndexPerformance(numOfDays, '^SPX');
 
 	return {
 		portfolioPerformance: normalizedPerformance,
-		indexPerformance,
+		indexIDPerformance,
+		indexUSPerformance
 	};
 }
 
