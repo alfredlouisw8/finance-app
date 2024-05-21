@@ -4,6 +4,7 @@ import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
 import YahooFinance from "@/lib/yahoo-finance";
 import { getHoldingType, getHoldingsData } from "@/utils/functions";
 import { Holding, HoldingType } from "@prisma/client";
+import prisma from "@/lib/prisma";
 
 export async function calculateTickerValue(
 	key: string,

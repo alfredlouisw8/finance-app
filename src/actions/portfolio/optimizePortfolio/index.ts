@@ -7,6 +7,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { OptimizePortfolio } from "./schema";
 import { optimizeCurrentPortfolio } from "./helper/helper";
+import prisma from "@/lib/prisma";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 	const session = await getServerSession(authOptions);

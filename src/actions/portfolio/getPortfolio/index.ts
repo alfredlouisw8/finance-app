@@ -1,3 +1,5 @@
+import prisma from "@/lib/prisma";
+
 export default async function getPortfolio(portfolioId: string) {
 	const response = await prisma.portfolio.findUnique({
 		where: {

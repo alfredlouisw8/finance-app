@@ -1,3 +1,5 @@
+import prisma from "@/lib/prisma";
+
 export default async function getEquityRiskPremium() {
 	const response = await prisma.applicationSetting.findUnique({
 		where: {
