@@ -14,18 +14,18 @@ import { CustomPrismaAdapter } from "./custom-prisma-adapter";
 export const authOptions: NextAuthOptions = {
 	adapter: CustomPrismaAdapter(prisma),
 	providers: [
-		GoogleProvider({
-			clientId: process.env.GOOGLE_CLIENT_ID || "",
-			clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
-			authorization: {
-				params: {
-					prompt: "consent",
-					access_type: "offline",
-					response_type: "code",
-				},
-			},
-			allowDangerousEmailAccountLinking: true,
-		}),
+		// GoogleProvider({
+		// 	clientId: process.env.GOOGLE_CLIENT_ID || "",
+		// 	clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+		// 	authorization: {
+		// 		params: {
+		// 			prompt: "consent",
+		// 			access_type: "offline",
+		// 			response_type: "code",
+		// 		},
+		// 	},
+		// 	allowDangerousEmailAccountLinking: true,
+		// }),
 		EmailProvider({
 			server: {
 				host: process.env.EMAIL_SERVER_HOST,
