@@ -35,7 +35,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 		user.currentPortfolioId as string
 	);
 	const proposedPortfolio = await getPortfolio(
-		user.currentPortfolioId as string
+		user.proposedPortfolioId as string
 	);
 
 	const currentHoldingsData = await getHoldingsData(currentHoldings);

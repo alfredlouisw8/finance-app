@@ -16,12 +16,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 type Props = {
 	startingDate: string;
-	holdings: Holding[];
+	portfolioId: string;
 };
 
 export default function PortfolioPerformanceChart({
 	startingDate,
-	holdings,
+	portfolioId,
 }: Props) {
 	const [month, setMonth] = useState(1);
 	const [isLoading, setIsLoading] = useState(false);
@@ -33,10 +33,7 @@ export default function PortfolioPerformanceChart({
 		[startingDate, month]
 	);
 	const endDate = format(new Date(), "P");
-	const allDates = useMemo(
-		() => getAllDates(startDate, endDate),
-		[startDate, endDate]
-	);
+
 	const numOfDays = useMemo(
 		() => getDaysBetweenDates(startDate, endDate),
 		[startDate, endDate]
@@ -45,14 +42,15 @@ export default function PortfolioPerformanceChart({
 	const [chartPerformances, setChartPerformances] = useState({
 		indexIDPerformance: [1],
 		portfolioPerformance: [1],
-		indexUSPerformance: [1]
+		indexUSPerformance: [1],
+		dateData: [""],
 	});
 
 	useEffect(() => {
 		async function handleChartPerformances() {
 			setIsLoading(true);
 			const performances = await axios.post("/api/performance", {
-				holdings,
+				portfolioId,
 				startDate,
 			});
 
@@ -61,7 +59,7 @@ export default function PortfolioPerformanceChart({
 		}
 
 		handleChartPerformances();
-	}, [startDate, holdings]);
+	}, [startDate, portfolioId]);
 
 	useEffect(() => {
 		// Save scroll position before component unmounts
@@ -79,7 +77,7 @@ export default function PortfolioPerformanceChart({
 	}, [chartPerformances]);
 
 	const data = {
-		labels: allDates,
+		labels: chartPerformances.dateData,
 		datasets: [
 			{
 				label: "^JKSE",

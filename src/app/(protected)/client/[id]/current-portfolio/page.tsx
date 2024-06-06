@@ -52,7 +52,6 @@ export default async function Page({ params }: { params: { id: string } }) {
 	const startDate = portfolio?.updatedAt!;
 
 	const endDate = new Date();
-	const allDates = getAllDates(startDate, endDate);
 	const numOfDays = getDaysBetweenDates(startDate, endDate);
 
 	const chartPerformances = await getHoldingsPerformance(holdings, startDate);
@@ -63,7 +62,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 	const holdingsPrices = chartPerformances.portfolioPerformance;
 
 	const data = {
-		labels: allDates,
+		labels: chartPerformances.dateData,
 		datasets: [
 			{
 				label: "^JKSE",

@@ -53,7 +53,7 @@ export default function PortfolioHoldingTable({
 						return (
 							<TableRow key={data.id}>
 								<TableCell className="font-medium">{i + 1}</TableCell>
-								<TableCell>{data.name}</TableCell>
+								<TableCell>{data.name || "N/A"}</TableCell>
 								<TableCell>{data.ticker}</TableCell>
 								<TableCell>{data.type}</TableCell>
 								<TableCell>{data.amount.toFixed(2)}</TableCell>

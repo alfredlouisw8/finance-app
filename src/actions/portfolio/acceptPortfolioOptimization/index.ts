@@ -41,6 +41,7 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 			await tx.holding.createMany({
 				data: proposedHoldings.map((holding) => {
 					return {
+						name: holding.name,
 						ticker: holding.ticker,
 						amount: holding.amount,
 						type: holding.type,

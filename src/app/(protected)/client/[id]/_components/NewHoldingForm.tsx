@@ -31,7 +31,6 @@ export default function NewHoldingForm({ portfolioId, userId }: Props) {
 			portfolioId,
 			userId,
 			ticker: "",
-			type: HoldingType.US_STOCK,
 		},
 	});
 

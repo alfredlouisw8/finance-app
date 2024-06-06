@@ -3,6 +3,8 @@ import { HoldingData } from "@/types/Holding";
 import { RiskProfile } from "@/types/User";
 import { ChartReturnType } from "@/types/YahooFinance";
 import { Holding, HoldingType, Portfolio } from "@prisma/client";
+import { indexIDTicker, indexUSTicker } from "./consts";
+import { format, sub } from "date-fns";
 
 export const getRiskProfileResult = (totalPoint: number): RiskProfile => {
 	if (totalPoint >= 64) {
@@ -100,9 +102,21 @@ export async function getBenchmarkTableData(
 	equityWeight: number,
 	fixedIncomeWeight: number
 ) {
-	const priceData5year = await YahooFinance.chart("^JKSE", "1d", "5y");
-	const priceData3year = await YahooFinance.chart("^JKSE", "1d", "3y");
-	const priceData1year = await YahooFinance.chart("^JKSE", "1d", "1y");
+	const priceData5year = await YahooFinance.historical(
+		indexIDTicker,
+		format(sub(new Date(), { years: 5 }), "yyyy-MM-dd"),
+		"d"
+	);
+	const priceData3year = await YahooFinance.historical(
+		indexIDTicker,
+		format(sub(new Date(), { years: 3 }), "yyyy-MM-dd"),
+		"d"
+	);
+	const priceData1year = await YahooFinance.historical(
+		indexIDTicker,
+		format(sub(new Date(), { years: 1 }), "yyyy-MM-dd"),
+		"d"
+	);
 
 	const bondsBenchmarkReturn = {
 		return1y: 8,
@@ -203,24 +217,17 @@ export function calculatePercentage(value: number, totalValue: number) {
 export async function getHoldingsData(
 	holdings: Holding[]
 ): Promise<HoldingData[]> {
-	const tickers = ["IDR=X", ...holdings.map((holding) => holding.ticker)];
+	const tickers = ["IDR.FOREX", ...holdings.map((holding) => holding.ticker)];
 
-	const results = await YahooFinance.multiQuote(tickers);
+	const results = await YahooFinance.multiSearch(tickers);
 
-	const { regularMarketPrice: currencyRate } = results[0];
+	const currencyRate = results[0]?.regularMarketPrice;
 
 	return holdings.map((holding, i) => {
 		let currentPrice = results[i + 1].regularMarketPrice;
-		let longName = results[i + 1].longName;
-
-		if (process.env.RAPIDAPI_DUMMY_DATA) {
-			currentPrice = 1000;
-			longName = "Dummy " + i;
-		}
 
 		return {
 			...holding,
-			name: longName,
 			lastPrice: currentPrice,
 			initialValue: getTotalValue(
 				holding.averageBuyPrice,
@@ -241,9 +248,20 @@ export async function getHoldingsData(
 export function getHoldingType(ticker: string) {
 	if (ticker.includes(".JK")) {
 		return HoldingType.ID_STOCK;
+	} else if (ticker.includes(".AU")) {
+		return HoldingType.AU_STOCK;
 	} else {
 		return HoldingType.US_STOCK;
 	}
+}
+
+export function getUpdatedTicker(ticker: string, type: HoldingType) {
+	let updatedTicker = ticker;
+	if (type === HoldingType.US_STOCK && !ticker.includes(".US")) {
+		updatedTicker += ".US";
+	}
+
+	return updatedTicker;
 }
 
 // Define a function to calculate logarithmic returns
@@ -300,16 +318,24 @@ export async function getPortfolioBetaValue(
 	totalPortfolioValue: number
 ) {
 	const indexPrices = {
-		us: await YahooFinance.chart("^SPX", "1mo", "5y"),
-		id: await YahooFinance.chart("^JKSE", "1mo", "5y"),
+		us: await YahooFinance.historical(
+			indexUSTicker,
+			format(sub(new Date(), { years: 5 }), "yyyy-MM-dd"),
+			"m"
+		),
+		id: await YahooFinance.historical(
+			indexIDTicker,
+			format(sub(new Date(), { years: 5 }), "yyyy-MM-dd"),
+			"m"
+		),
 	};
 
 	const betaAdjStocks = await Promise.all(
 		holdingsData.map(async (holding, i) => {
-			const { pricesData: stockPrices } = await YahooFinance.chart(
+			const { pricesData: stockPrices } = await YahooFinance.historical(
 				holding.ticker,
-				"1mo",
-				"5y"
+				format(sub(new Date(), { years: 5 }), "yyyy-MM-dd"),
+				"m"
 			);
 
 			let indexPricesData = indexPrices.id.pricesData;
@@ -364,24 +390,21 @@ export async function getHoldingsPerformance(
 	startingDate: Date | string
 ) {
 	const startDate = new Date(startingDate);
-	const endDate = new Date();
-
-	const numOfDays = getDaysBetweenDates(startDate, endDate);
-
 	const performanceData = [];
 
 	// USDIDR rate
-	const results = await YahooFinance.multiQuote(["IDR=X"]);
-	const { regularMarketPrice: currencyRate } = results[0];
+	const results = await YahooFinance.search("IDR.FOREX");
+	const currencyRate = results?.regularMarketPrice;
 
 	for (const holding of holdings) {
-		const historicalData = await YahooFinance.chart(
+		const historicalData = await YahooFinance.historical(
 			holding.ticker,
-			"1d",
-			`${numOfDays}d`
+			format(startDate, "yyyy-MM-dd"),
+			"d"
 		);
+
 		const prices = historicalData.pricesData.map((price) =>
-			getTotalValue(price, holding.amount, holding.type, currencyRate)
+			getTotalValue(price, holding.amount, holding.type, currencyRate!)
 		);
 
 		performanceData.push({
@@ -390,8 +413,14 @@ export async function getHoldingsPerformance(
 		});
 	}
 
+	const indexIDPerformance = await getIndexPerformance(startDate);
+	const indexUSPerformance = await getIndexPerformance(
+		startDate,
+		indexUSTicker
+	);
+
 	const portfolioPerformance = [];
-	for (let i = 0; i < numOfDays; i++) {
+	for (let i = 0; i < indexIDPerformance.dateData.length; i++) {
 		let totalPortfolioValue = 0;
 		for (const data of performanceData) {
 			totalPortfolioValue += data.values[i]; // total portfolio value at given day
@@ -405,18 +434,23 @@ export async function getHoldingsPerformance(
 		(data) => data / startingPortfolioPerformance
 	);
 
-	const indexIDPerformance = await getIndexPerformance(numOfDays);
-	const indexUSPerformance = await getIndexPerformance(numOfDays, '^SPX');
-
 	return {
 		portfolioPerformance: normalizedPerformance,
-		indexIDPerformance,
-		indexUSPerformance
+		indexIDPerformance: indexIDPerformance.indexPerformance,
+		indexUSPerformance: indexUSPerformance.indexPerformance,
+		dateData: indexIDPerformance.dateData,
 	};
 }
 
-export async function getIndexPerformance(numOfDays: number, index = "^JKSE") {
-	const historicalData = await YahooFinance.chart(index, "1d", `${numOfDays}d`);
+export async function getIndexPerformance(
+	startDate: Date | string,
+	index = indexIDTicker
+) {
+	const historicalData = await YahooFinance.historical(
+		index,
+		format(startDate, "yyyy-MM-dd"),
+		"d"
+	);
 
 	const startingPrice = historicalData.pricesData[0];
 
@@ -424,5 +458,5 @@ export async function getIndexPerformance(numOfDays: number, index = "^JKSE") {
 		(data) => data / startingPrice
 	);
 
-	return indexPerformance;
+	return { indexPerformance, dateData: historicalData.dateData };
 }

@@ -35,6 +35,7 @@ export default function HoldingUniverseTable({
 			<TableHeader>
 				<TableRow>
 					<TableHead className="w-[100px]">No</TableHead>
+					<TableHead>Name</TableHead>
 					<TableHead>Ticker</TableHead>
 					<TableHead>Type</TableHead>
 					<TableHead className="text-right">Action</TableHead>
@@ -46,6 +47,7 @@ export default function HoldingUniverseTable({
 						return (
 							<TableRow key={data.id}>
 								<TableCell className="font-medium">{i + 1}</TableCell>
+								<TableCell>{data.name}</TableCell>
 								<TableCell>{data.ticker}</TableCell>
 								<TableCell>{data.type}</TableCell>
 								<TableCell className="text-right flex items-center justify-end gap-3">

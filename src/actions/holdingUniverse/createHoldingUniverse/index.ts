@@ -11,6 +11,8 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { sub } from "date-fns";
 import YahooFinance from "@/lib/yahoo-finance";
+import { getHoldingType, getUpdatedTicker } from "@/utils/functions";
+import { HoldingType } from "@prisma/client";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 	const session = await getServerSession(authOptions);
@@ -23,18 +25,22 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
 	let holdingUniverse;
 
-	const { ticker, type, userId } = data;
+	const { ticker, userId } = data;
+
+	const type = getHoldingType(ticker);
+	const updatedTicker = getUpdatedTicker(ticker, type);
 
 	try {
-		const quote = await YahooFinance.quote(ticker);
+		const search = await YahooFinance.search(updatedTicker);
 
-		if (!quote) {
+		if (!search) {
 			throw new Error("Ticker not found");
 		}
 
 		holdingUniverse = await prisma.holdingUniverse.create({
 			data: {
-				ticker: ticker.toUpperCase(),
+				name: search.longName,
+				ticker: updatedTicker.toUpperCase(),
 				type,
 				userId,
 			},

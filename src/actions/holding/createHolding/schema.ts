@@ -6,7 +6,6 @@ export const CreateHolding = z.object({
 	ticker: z.string().min(1, "Required"),
 	averageBuyPrice: z.number(),
 	amount: z.number(),
-	type: z.nativeEnum(HoldingType),
 	userId: z.string(),
 	holdingId: z.string().optional(),
 });

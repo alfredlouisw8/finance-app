@@ -5,6 +5,7 @@ import YahooFinance from "@/lib/yahoo-finance";
 import { getHoldingType, getHoldingsData } from "@/utils/functions";
 import { Holding, HoldingType } from "@prisma/client";
 import prisma from "@/lib/prisma";
+import getPortfolio from "../../getPortfolio";
 
 export async function calculateTickerValue(
 	key: string,
@@ -15,7 +16,7 @@ export async function calculateTickerValue(
 		optimizedWeight[key] * currentTotalPortfolioValue;
 	const tickerType = getHoldingType(key);
 
-	const results = await YahooFinance.multiQuote(["IDR=X", key]);
+	const results = await YahooFinance.multiSearch(["IDR.FOREX", key]);
 
 	let tickerValue = results[1].regularMarketPrice; // Second result is the holding data
 	if (tickerType === HoldingType.US_STOCK) {
@@ -57,7 +58,10 @@ export async function calculateProposedHoldings(
 
 			excessCash += optimizedTickerValue - roundedTickerAmount * tickerValue;
 
+			const search = await YahooFinance.search(key);
+
 			return {
+				name: search?.longName,
 				ticker: key,
 				amount: roundedTickerAmount,
 				type: tickerType,
@@ -112,11 +116,11 @@ export async function optimizeCurrentPortfolio(
 
 	const holdings = await getHoldingByPortfolio(currentPortfolioId);
 	const holdingsData = await getHoldingsData(holdings);
+	const currentPortfolio = await getPortfolio(currentPortfolioId);
 
-	const currentTotalPortfolioValue = holdingsData.reduce(
-		(acc, val) => acc + val.value,
-		0
-	);
+	const currentTotalPortfolioValue =
+		holdingsData.reduce((acc, val) => acc + val.value, 0) +
+		(currentPortfolio?.cash || 0);
 
 	const { proposedHoldings, excessCash } = await calculateProposedHoldings(
 		optimizedWeight,

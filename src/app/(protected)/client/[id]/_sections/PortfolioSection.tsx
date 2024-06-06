@@ -141,7 +141,9 @@ export default async function PortfolioSection({
 							<TableRow>
 								<TableCell>Expected Return</TableCell>
 								<TableCell className="text-right">
-									{riskFreeRate?.value && equityRiskPremium?.value
+									{riskFreeRate?.value &&
+									equityRiskPremium?.value &&
+									expectedReturn
 										? expectedReturn.toFixed(2) + "%"
 										: "-"}
 									{}
@@ -156,7 +158,7 @@ export default async function PortfolioSection({
 							<TableRow>
 								<TableCell>Beta</TableCell>
 								<TableCell className="text-right">
-									{portfolioBeta.toFixed(2)}
+									{portfolioBeta ? portfolioBeta.toFixed(2) : "-"}
 								</TableCell>
 							</TableRow>
 							<TableRow>

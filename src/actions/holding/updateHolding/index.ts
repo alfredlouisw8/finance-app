@@ -11,6 +11,8 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { sub } from "date-fns";
 import YahooFinance from "@/lib/yahoo-finance";
+import { HoldingType } from "@prisma/client";
+import { getHoldingType, getUpdatedTicker } from "@/utils/functions";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 	const session = await getServerSession(authOptions);
@@ -23,20 +25,16 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
 	let portfolio, holding;
 
-	const {
-		portfolioId,
-		amount,
-		averageBuyPrice,
-		ticker,
-		type,
-		userId,
-		holdingId,
-	} = data;
+	const { portfolioId, amount, averageBuyPrice, ticker, userId, holdingId } =
+		data;
+
+	const type = getHoldingType(ticker);
+	const updatedTicker = getUpdatedTicker(ticker, type);
 
 	try {
-		const quote = await YahooFinance.quote(ticker);
+		const search = await YahooFinance.search(updatedTicker);
 
-		if (!quote) {
+		if (!search) {
 			throw new Error("Ticker not found");
 		}
 
@@ -46,7 +44,8 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 					id: holdingId,
 				},
 				data: {
-					ticker,
+					name: search.longName,
+					ticker: updatedTicker.toUpperCase(),
 					amount,
 					averageBuyPrice,
 					type,

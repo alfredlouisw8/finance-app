@@ -113,7 +113,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 			</Card>
 
 			<PortfolioPerformanceChart
-				holdings={holdings}
+				portfolioId={user.proposedPortfolioId as string}
 				startingDate={format(portfolio?.updatedAt!, "P")}
 			/>
 		</div>

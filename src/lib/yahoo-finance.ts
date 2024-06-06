@@ -3,109 +3,90 @@ import {
 	ErrorText,
 	QuoteReturnType,
 } from "@/types/YahooFinance";
-import {
-	chartDummyData,
-	multiQuoteDummyData,
-	quoteDummyData,
-} from "@/utils/consts";
-import axios from "axios";
 
-const dummyData = process.env.RAPIDAPI_DUMMY_DATA;
+import axios from "axios";
+import { format, sub } from "date-fns";
 
 class YahooFinance {
-	private static cache: { [key: string]: any } = {};
-	static async makeRequest(
-		url: string,
-		retryFn: Function,
-		fallbackData: any
-	): Promise<any> {
-		if (dummyData) return { data: fallbackData };
-
-		const currentUrl = `https://${process.env.RAPIDAPI_HOST}/${url}`;
-		const options = {
-			method: "GET",
-			url: currentUrl,
-			headers: {
-				"X-RapidAPI-Key": process.env.RAPIDAPI_KEY,
-				"X-RapidAPI-Host": process.env.RAPIDAPI_HOST,
-			},
-		};
-
-		const cacheKey = url + new Date().toDateString();
-		if (YahooFinance.cache[cacheKey]) {
-			return YahooFinance.cache[cacheKey];
-		}
-
-		const promise = axios.request(options);
-		YahooFinance.cache[cacheKey] = promise;
+	static async search(ticker: string): Promise<QuoteReturnType | null> {
+		console.log("search eodhd", ticker);
 
 		try {
-			const response = await promise;
-			return response;
-		} catch (error: any) {
-			if (
-				error.response &&
-				error.response.status === 429 &&
-				error.response.statusText === ErrorText.TOO_MANY_REQUESTS
-			) {
-				// Too Many Requests - Retry after 1 second
-				await new Promise((resolve) => setTimeout(resolve, 1000));
-				return retryFn();
-			} else {
-				console.log(error.response?.data?.message);
-				//throw new Error(error.response?.data?.message);
+			const response = await axios.get(
+				`https://eodhd.com/api/search/${ticker}?api_token=${process.env.EODHD_API_KEY}&fmt=json`
+			);
+
+			if (response.data.length > 0) {
+				return {
+					regularMarketPrice: response.data[0].previousClose,
+					longName: response.data[0].Name,
+				};
 			}
+		} catch (error) {
+			console.log(error);
 		}
+
+		return null;
 	}
 
-	static async quote(ticker: string): Promise<QuoteReturnType> {
-		console.log("quote", ticker);
-		const response = await this.makeRequest(
-			`price/${ticker}`,
-			() => this.quote(ticker),
-			quoteDummyData
-		);
+	static async multiSearch(tickers: string[]): Promise<QuoteReturnType[]> {
+		console.log("multiSearch eodhd", tickers);
 
-		return {
-			regularMarketPrice: response.data.regularMarketPrice.raw,
-			longName: response.data.longName,
-		};
+		const firstTicker = tickers[0];
+		const otherTickers = tickers.slice(1);
+
+		try {
+			const response = await axios.get(
+				`https://eodhd.com/api/real-time/${firstTicker}?s=${otherTickers.join(
+					","
+				)}&api_token=${process.env.EODHD_API_KEY}&fmt=json`
+			);
+
+			if (otherTickers.length === 0) {
+				return [{ regularMarketPrice: response.data.close }];
+			}
+
+			return response.data.map((data: any) => ({
+				regularMarketPrice: data.close,
+			}));
+		} catch (error) {
+			console.log(error);
+		}
+
+		return [];
 	}
 
-	static async multiQuote(tickers: string[]): Promise<QuoteReturnType[]> {
-		console.log("multiQuote", tickers);
-
-		const response = await this.makeRequest(
-			`multi-quote/${tickers.join(",")}`,
-			() => this.multiQuote(tickers),
-			multiQuoteDummyData
-		);
-
-		return Object.values(response.data).map((result: any) => {
-			return {
-				regularMarketPrice: result.regularMarketPrice.raw,
-				longName: result.longName,
-			};
-		});
-	}
-
-	static async chart(
+	static async historical(
 		ticker: string,
-		interval: string,
-		range: string
+		from: string,
+		period: string
 	): Promise<ChartReturnType> {
-		console.log("chart", ticker, interval, range);
-		const response = await this.makeRequest(
-			`historic/${ticker}/${interval}/${range}`,
-			() => this.chart(ticker, interval, range),
-			chartDummyData
-		);
+		let firstClose, lastClose;
+		let pricesData,
+			dateData = [];
+
+		const to = format(sub(new Date(), { days: 1 }), "yyyy-MM-dd");
+
+		console.log("historical", ticker, from, to, period);
+
+		try {
+			const response = await axios.get(
+				`https://eodhd.com/api/eod/${ticker}?from=${from}&to=${to}&period=${period}&api_token=${process.env.EODHD_API_KEY}&fmt=json`
+			);
+
+			firstClose = response.data[0].adjusted_close;
+			lastClose = response.data[response.data.length - 1].adjusted_close;
+			pricesData = response.data.map((data: any) => data.adjusted_close);
+			dateData = response.data.map((data: any) => data.date);
+		} catch (error) {
+			console.log(error);
+		}
 
 		return {
-			chartPreviousClose: response.data?.meta?.chartPreviousClose || 0,
-			regularMarketPrice: response.data?.meta?.regularMarketPrice || 0,
-			pricesData:
-				response.data?.indicators?.adjclose[0]?.adjclose?.filter(Number) || [],
+			chartPreviousClose: firstClose || 0,
+			regularMarketPrice: lastClose || 0,
+			pricesData: pricesData || [],
+			dateData: dateData || [],
 		};
 	}
 }

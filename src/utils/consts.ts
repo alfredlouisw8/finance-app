@@ -185,41 +185,17 @@ export const riskProfileSurvey = [
 ];
 
 export const pieChartColors = [
-  "#2C3E50", // Dark blue-gray
-  "#8B0000", // Dark red
-  "#4B0082", // Indigo
-  "#006400", // Dark green
-  "#2F4F4F", // Dark slate gray
-  "#483D8B", // Dark slate blue
-  "#8B4513", // Saddle brown
-  "#556B2F", // Dark olive green
-  "#191970", // Midnight blue
-  "#8B008B", // Dark magenta
+	"#2C3E50", // Dark blue-gray
+	"#8B0000", // Dark red
+	"#4B0082", // Indigo
+	"#006400", // Dark green
+	"#2F4F4F", // Dark slate gray
+	"#483D8B", // Dark slate blue
+	"#8B4513", // Saddle brown
+	"#556B2F", // Dark olive green
+	"#191970", // Midnight blue
+	"#8B008B", // Dark magenta
 ];
-
-export const quoteDummyData = {
-	regularMarketPrice: { raw: 100 },
-	longName: "Dummy",
-};
-
-export const multiQuoteDummyData = {
-	"0": { regularMarketPrice: { raw: 16000 }, longName: "USDIDR" },
-	"1": { regularMarketPrice: { raw: 100 }, longName: "Dummy" },
-};
-
-export const chartDummyData = {
-	meta: {
-		chartPreviousClose: 100,
-		regularMarketPrice: 200,
-	},
-	indicators: {
-		adjclose: [
-			{
-				adjclose: [100, 120, 130, 140, 150, 160, 170, 180, 190, 200],
-			},
-		],
-	},
-};
 
 export const timeframes = [
 	{
@@ -247,3 +223,6 @@ export const timeframes = [
 		value: 60,
 	},
 ];
+
+export const indexIDTicker = "JKSE.INDX";
+export const indexUSTicker = "GSPC.INDX";

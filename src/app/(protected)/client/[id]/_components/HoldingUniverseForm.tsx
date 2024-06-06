@@ -42,7 +42,6 @@ export default function HoldingUniverseForm({ userId }: Props) {
 		defaultValues: {
 			userId,
 			ticker: "",
-			type: HoldingType.US_STOCK,
 		},
 	});
 
@@ -87,31 +86,6 @@ export default function HoldingUniverseForm({ userId }: Props) {
 							<FormControl>
 								<Input placeholder="Ticker" {...field} />
 							</FormControl>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
-				<FormField
-					control={form.control}
-					name="type"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Type</FormLabel>
-							<Select onValueChange={field.onChange} defaultValue={field.value}>
-								<FormControl>
-									<SelectTrigger>
-										<SelectValue placeholder="Select holding type" />
-									</SelectTrigger>
-								</FormControl>
-								<SelectContent>
-									{Object.values(HoldingType).map((type, i) => (
-										<SelectItem key={i} value={type}>
-											{type}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
 							<FormMessage />
 						</FormItem>
 					)}

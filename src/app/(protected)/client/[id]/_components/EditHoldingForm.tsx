@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef  } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useAction } from "@/hooks/useAction";
@@ -34,7 +34,6 @@ export default function EditHoldingForm({
 			portfolioId,
 			userId,
 			ticker: holding.ticker || "",
-			type: holding.type || HoldingType.US_STOCK,
 			holdingId: holding.id,
 		},
 	});

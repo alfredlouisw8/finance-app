@@ -81,31 +81,6 @@ export default function HoldingForm({
 					)}
 				/>
 
-				<FormField
-					control={form.control}
-					name="type"
-					render={({ field }) => (
-						<FormItem>
-							<FormLabel>Type</FormLabel>
-							<Select onValueChange={field.onChange} defaultValue={field.value}>
-								<FormControl>
-									<SelectTrigger>
-										<SelectValue placeholder="Select holding type" />
-									</SelectTrigger>
-								</FormControl>
-								<SelectContent>
-									{Object.values(HoldingType).map((type, i) => (
-										<SelectItem key={i} value={type}>
-											{type}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-							<FormMessage />
-						</FormItem>
-					)}
-				/>
-
 				<DialogFooter>
 					<Button type="submit">Submit</Button>
 					<DialogClose asChild>
