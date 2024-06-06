@@ -13,6 +13,9 @@ import { CustomPrismaAdapter } from "./custom-prisma-adapter";
 
 export const authOptions: NextAuthOptions = {
 	adapter: CustomPrismaAdapter(prisma),
+	pages: {
+		signIn: "/sign-in",
+	},
 	providers: [
 		// GoogleProvider({
 		// 	clientId: process.env.GOOGLE_CLIENT_ID || "",
