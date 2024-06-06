@@ -15,7 +15,7 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/ui/table";
-import { Role } from "@/types/User";
+import { Role, UserDetail } from "@/types/User";
 import { Portfolio, User } from "@prisma/client";
 import PortfolioForm from "../_components/PortfolioForm";
 import getEquityRiskPremium from "@/actions/applicationSetting/getEquityRiskPremium";
@@ -33,7 +33,7 @@ import getPortfolio from "@/actions/portfolio/getPortfolio";
 import { HoldingData } from "@/types/Holding";
 
 type Props = {
-	user: User;
+	user: Partial<UserDetail>;
 	currentRole: Role;
 	isAdmin: boolean;
 	portfolio: Portfolio | null;

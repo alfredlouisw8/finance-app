@@ -10,7 +10,7 @@ import { Button } from "../../../../../components/ui/button";
 import Link from "next/link";
 import PieChart from "../../../../../components/PieChart";
 
-import { Role } from "@/types/User";
+import { Role, UserDetail } from "@/types/User";
 import { User } from "@prisma/client";
 import AssetAllocationForm from "../_components/AssetAllocationForm";
 import { pieChartColors } from "@/utils/consts";
@@ -19,7 +19,7 @@ import { authOptions } from "@/lib/auth";
 import BenchmarkReturnTable from "../_components/BenchmarkReturnTable";
 
 type Props = {
-	user: User;
+	user: Partial<UserDetail>;
 	currentRole: Role;
 };
 
@@ -76,7 +76,10 @@ export default async function RiskProfileSection({ user, currentRole }: Props) {
 										<DialogTitle>Asset Allocation</DialogTitle>
 									</DialogHeader>
 
-									<AssetAllocationForm equities={equities} clientId={user.id} />
+									<AssetAllocationForm
+										equities={equities}
+										clientId={user.id as string}
+									/>
 								</DialogContent>
 							</Dialog>
 						</>

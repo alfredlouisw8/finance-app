@@ -9,6 +9,7 @@ import { InputType, ReturnType } from "./types";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { PortfolioType } from "@prisma/client";
 
 const handler = async (data: InputType): Promise<ReturnType> => {
 	const session = await getServerSession(authOptions);
@@ -32,37 +33,46 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 				create: { email: email, name: name, advisorId: session.user.id },
 			});
 
-			// Step 2: Create current and proposed portfolios
+			// Step 2: Create the current portfolio
 			const currentPortfolio = await prisma.portfolio.create({
 				data: {
 					// Portfolio data...
-					userCurrent: { connect: { id: user.id } },
+					cash: 0, // default cash value or your logic to set cash
+					holdings: {}, // default holdings or your logic to set holdings
 				},
 			});
 
+			// Step 3: Create the proposed portfolio
 			const proposedPortfolio = await prisma.portfolio.create({
 				data: {
 					// Portfolio data...
-					userProposed: { connect: { id: user.id } },
+					cash: 0, // default cash value or your logic to set cash
+					holdings: {}, // default holdings or your logic to set holdings
 				},
 			});
 
-			// Step 3: Link portfolios back to the user
-			// This step assumes you have the logic or fields to update the user with portfolio IDs
-			// This might require adjusting your user model to directly store portfolio IDs or relations
-			await prisma.user.update({
-				where: { id: user.id },
-				data: {
-					currentPortfolioId: currentPortfolio.id,
-					proposedPortfolioId: proposedPortfolio.id,
-				},
+			// Step 4: Link portfolios to the user via UserPortfolio
+			await prisma.userPortfolio.createMany({
+				data: [
+					{
+						userId: user.id,
+						portfolioId: currentPortfolio.id,
+						type: PortfolioType.CURRENT,
+					},
+					{
+						userId: user.id,
+						portfolioId: proposedPortfolio.id,
+						type: PortfolioType.PROPOSED,
+					},
+				],
 			});
 
 			return { user, currentPortfolio, proposedPortfolio };
 		});
-	} catch (error) {
+	} catch (error: any) {
+		console.error(error.message);
 		return {
-			error: "Failed to create user.",
+			error: error.message || "Failed to create user.",
 		};
 	}
 

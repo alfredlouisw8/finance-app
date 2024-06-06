@@ -29,9 +29,10 @@ import { toast } from "@/components/ui/use-toast";
 import { pieChartColors } from "@/utils/consts";
 import PieChart from "@/components/PieChart";
 import { optimizePortfolio } from "@/actions/portfolio/optimizePortfolio";
+import { UserDetail } from "@/types/User";
 
 type Props = {
-	user: User;
+	user: Partial<UserDetail>;
 	holdingUniverse: HoldingUniverse[];
 	riskFreeRate: string;
 };
@@ -72,14 +73,14 @@ export default function OptimizePortfolioForm({
 					end_date: format(new Date(), "yyyy-MM-dd"),
 					rf: parseFloat(riskFreeRate) / 100,
 					max_allocation: values.maxAllocation / 100,
-				},
+				}
 			);
 
 			await optimizePortfolio({
 				optimizedWeightJson: response.data,
 				currentPortfolioId: user.currentPortfolioId as string,
 				proposedPortfolioId: user.proposedPortfolioId as string,
-				clientId: user.id,
+				clientId: user.id as string,
 			});
 
 			toast({

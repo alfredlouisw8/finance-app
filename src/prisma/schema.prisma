@@ -48,11 +48,11 @@ model Session {
 }
 
 model User {
-  id                    String            @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  id                    String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
   name                  String?
-  email                 String?           @unique
+  email                 String?   @unique
   emailVerified         DateTime?
   image                 String?
   accounts              Account[]
@@ -61,16 +61,29 @@ model User {
   riskProfile           String?
   equityAllocation      Int?
   fixedIncomeAllocation Int?
-  isAdmin               Boolean           @default(false)
-  advisorId             String?           @db.ObjectId
-  users                 User[]            @relation("Advisors")
-  advisor               User?             @relation("Advisors", fields: [advisorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  currentPortfolio      Portfolio?        @relation("UserCurrentPortfolio")
-  proposedPortfolio     Portfolio?        @relation("UserProposedPortfolio")
-  // Ensure the IDs are correctly associated if needed
-  currentPortfolioId    String?           @db.ObjectId
-  proposedPortfolioId   String?           @db.ObjectId
-  HoldingUniverse       HoldingUniverse[]
+  isAdmin               Boolean   @default(false)
+  advisorId             String?   @db.ObjectId
+  users                 User[]    @relation("Advisors")
+  advisor               User?     @relation("Advisors", fields: [advisorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  holdingUniverse HoldingUniverse[]
+  userPortfolio   UserPortfolio[]
+}
+
+enum PortfolioType {
+  CURRENT
+  PROPOSED
+}
+
+model UserPortfolio {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String        @db.ObjectId
+  user        User          @relation(fields: [userId], references: [id])
+  portfolioId String        @db.ObjectId
+  portfolio   Portfolio     @relation(fields: [portfolioId], references: [id])
+  type        PortfolioType
+
+  @@unique([userId, portfolioId])
 }
 
 model Portfolio {
@@ -80,10 +93,7 @@ model Portfolio {
   cash      Float     @default(0)
   holdings  Holding[]
 
-  userCurrent    User?   @relation("UserCurrentPortfolio", fields: [userIdCurrent], references: [id])
-  userIdCurrent  String? @unique @db.ObjectId
-  userProposed   User?   @relation("UserProposedPortfolio", fields: [userIdProposed], references: [id])
-  userIdProposed String? @unique @db.ObjectId
+  userPortfolio UserPortfolio[]
 }
 
 model Holding {

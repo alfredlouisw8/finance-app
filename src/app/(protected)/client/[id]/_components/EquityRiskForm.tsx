@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { useAction } from "@/hooks/useAction";
+import { UserDetail } from "@/types/User";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@prisma/client";
 import { useForm } from "react-hook-form";
@@ -24,7 +25,7 @@ import { z } from "zod";
 const formSchema = UpdateEquityRisk;
 
 type Props = {
-	user: User;
+	user: Partial<UserDetail>;
 	equityRiskPremium?: string;
 	riskFreeRate?: string;
 };

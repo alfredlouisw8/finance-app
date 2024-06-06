@@ -3,7 +3,7 @@ import getUserDetail from "@/actions/users/getUserDetail";
 import RiskProfileSection from "@/app/(protected)/client/[id]/_sections/RiskProfileSection";
 
 import { authOptions } from "@/lib/auth";
-import { Role } from "@/types/User";
+import { Role, UserDetail } from "@/types/User";
 import { format } from "date-fns";
 import { getServerSession } from "next-auth";
 import Link from "next/link";

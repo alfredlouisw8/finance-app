@@ -12,6 +12,9 @@ import {
 import HoldingUniverseTable from "../_components/HoldingUniverseTable";
 import HoldingUniverseForm from "../_components/HoldingUniverseForm";
 
+import { useRouter } from "next/navigation";
+import BackButton from "@/components/BackButton";
+
 export default async function Page({ params }: { params: { id: string } }) {
 	const user = await getUserDetail(params.id);
 
@@ -19,32 +22,35 @@ export default async function Page({ params }: { params: { id: string } }) {
 		return <p>User not found</p>;
 	}
 
-	const holdingUniverses = await getHoldingUniverse(user.id);
+	const holdingUniverses = await getHoldingUniverse(user.id as string);
 
 	return (
-		<Card>
-			<CardHeader className="flex flex-row justify-between items-center">
-				<CardTitle>Holding Universe</CardTitle>
+		<>
+			<BackButton />
+			<Card>
+				<CardHeader className="flex flex-row justify-between items-center">
+					<CardTitle>Holding Universe</CardTitle>
 
-				<Dialog>
-					<DialogTrigger asChild>
-						<Button>Create Holding Universe</Button>
-					</DialogTrigger>
-					<DialogContent>
-						<DialogHeader>
-							<DialogTitle>New Holding</DialogTitle>
-						</DialogHeader>
+					<Dialog>
+						<DialogTrigger asChild>
+							<Button>Create Holding Universe</Button>
+						</DialogTrigger>
+						<DialogContent>
+							<DialogHeader>
+								<DialogTitle>New Holding</DialogTitle>
+							</DialogHeader>
 
-						<HoldingUniverseForm userId={params.id} />
-					</DialogContent>
-				</Dialog>
-			</CardHeader>
-			<CardContent>
-				<HoldingUniverseTable
-					holdingUniverses={holdingUniverses}
-					userId={params.id}
-				/>
-			</CardContent>
-		</Card>
+							<HoldingUniverseForm userId={params.id} />
+						</DialogContent>
+					</Dialog>
+				</CardHeader>
+				<CardContent>
+					<HoldingUniverseTable
+						holdingUniverses={holdingUniverses}
+						userId={params.id}
+					/>
+				</CardContent>
+			</Card>
+		</>
 	);
 }

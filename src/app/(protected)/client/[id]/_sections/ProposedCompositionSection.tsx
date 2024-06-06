@@ -15,7 +15,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Role } from "@/types/User";
+import { Role, UserDetail } from "@/types/User";
 import { pieChartColors } from "@/utils/consts";
 import {
 	calculatePercentage,
@@ -32,7 +32,7 @@ import { format } from "date-fns";
 import { HoldingData } from "@/types/Holding";
 
 type Props = {
-	user: User;
+	user: Partial<UserDetail>;
 	currentRole: Role;
 	portfolio: Portfolio | null;
 	holdingsData: HoldingData[];
@@ -69,7 +69,7 @@ export default async function ProposedCompositionSection({
 		],
 	};
 
-	const holdingUniverse = await getHoldingUniverse(user.id);
+	const holdingUniverse = await getHoldingUniverse(user.id as string);
 	const riskFreeRate = await getRiskFreeRate();
 
 	return (

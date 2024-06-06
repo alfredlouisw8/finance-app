@@ -1,3 +1,5 @@
+import { User } from "@prisma/client";
+
 export enum RiskProfile {
 	RISK_SEEKING = "Risk-seeking",
 	SLIGHTLY_RISK_SEEKING = "Slightly risk-seeking",
@@ -9,3 +11,8 @@ export enum Role {
 	ADVISOR = "advisor",
 	CLIENT = "client",
 }
+
+export type UserDetail = User & {
+	currentPortfolioId: string;
+	proposedPortfolioId: string;
+};

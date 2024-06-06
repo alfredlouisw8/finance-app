@@ -16,7 +16,7 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Role } from "@/types/User";
+import { Role, UserDetail } from "@/types/User";
 import { pieChartColors } from "@/utils/consts";
 import {
 	calculatePercentage,
@@ -31,7 +31,7 @@ import AcceptOptimizationForm from "../_components/AcceptOptimizationForm";
 import { HoldingData } from "@/types/Holding";
 
 type Props = {
-	user: User;
+	user: Partial<UserDetail>;
 	currentRole: Role;
 	portfolio: Portfolio | null;
 	holdingsData: HoldingData[];
@@ -90,7 +90,7 @@ export default async function CurrentCompositionSection({
 							</DialogHeader>
 
 							<AcceptOptimizationForm
-								clientId={user.id}
+								clientId={user.id as string}
 								proposedPortfolioId={user.proposedPortfolioId as string}
 								currentPortfolioId={user.currentPortfolioId as string}
 							/>
