@@ -15,7 +15,7 @@ import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
 import getPortfolio from "@/actions/portfolio/getPortfolio";
 import { getHoldingsData } from "@/utils/functions";
 
-export const maxDuration = 300;
+export const maxDuration = 60;
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const session = await getServerSession(authOptions);
