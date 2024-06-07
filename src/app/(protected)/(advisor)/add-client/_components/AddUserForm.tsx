@@ -15,17 +15,17 @@ import {
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from "../../../../../../components/ui/card";
+} from "../../../../../components/ui/card";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Button } from "../../../../../../components/ui/button";
+import { Button } from "../../../../../components/ui/button";
 import { useRouter } from "next/navigation";
 import { CreateUser } from "@/actions/users/createUser/schema";
 import { useAction } from "@/hooks/useAction";
 import { createUser } from "@/actions/users/createUser";
-import { toast } from "../../../../../../components/ui/use-toast";
+import { toast } from "../../../../../components/ui/use-toast";
 
 const formSchema = CreateUser;
 
