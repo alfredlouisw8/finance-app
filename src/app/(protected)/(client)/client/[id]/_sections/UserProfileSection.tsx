@@ -17,11 +17,13 @@ export default function UserProfileSection({ user }: Props) {
 		<Card>
 			<CardHeader>
 				<CardTitle>{user.name}</CardTitle>
-				<CardDescription>{user.email}</CardDescription>
+				<CardDescription>Email: {user.email}</CardDescription>
+				<CardDescription>Address: {user.address}</CardDescription>
+				<CardDescription>Phone: {user.phone}</CardDescription>
 				<CardDescription>
 					Member since {format(user.createdAt!, "dd-MM-yyyy")}
 				</CardDescription>
-				<CardDescription>Risk Profile {user.riskProfile}</CardDescription>
+				<CardDescription>Risk Profile: {user.riskProfile}</CardDescription>
 			</CardHeader>
 		</Card>
 	);

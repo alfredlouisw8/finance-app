@@ -7,4 +7,10 @@ export const CreateUser = z.object({
 	name: z.string().min(1, {
 		message: "Must be at least 1 characters.",
 	}),
+	address: z.string().min(1, {
+		message: "Must be at least 1 characters.",
+	}),
+	phone: z.string().min(1, {
+		message: "Must be at least 1 characters.",
+	}),
 });

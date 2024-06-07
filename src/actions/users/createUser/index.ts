@@ -22,15 +22,26 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
 	let result;
 
-	const { email, name } = data;
+	const { email, name, address, phone } = data;
 
 	try {
 		result = await prisma.$transaction(async (prisma) => {
 			// Step 1: Create or update the user
 			const user = await prisma.user.upsert({
 				where: { email: email },
-				update: { name: name, advisorId: session.user.id },
-				create: { email: email, name: name, advisorId: session.user.id },
+				update: {
+					name: name,
+					advisorId: session.user.id,
+					address: address,
+					phone: phone,
+				},
+				create: {
+					email: email,
+					name: name,
+					advisorId: session.user.id,
+					address: address,
+					phone: phone,
+				},
 			});
 
 			// Step 2: Create the current portfolio
@@ -65,6 +76,13 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 						type: PortfolioType.PROPOSED,
 					},
 				],
+			});
+
+			//step 5: create client
+			await prisma.client.create({
+				data: {
+					email: email,
+				},
 			});
 
 			return { user, currentPortfolio, proposedPortfolio };

@@ -1,7 +1,5 @@
 import getUserDetail from "@/actions/users/getUserDetail";
 
-import RiskProfileSection from "@/app/(protected)/client/[id]/_sections/RiskProfileSection";
-
 import { authOptions } from "@/lib/auth";
 import { Role, UserDetail } from "@/types/User";
 import { format } from "date-fns";
@@ -14,6 +12,8 @@ import UserProfileSection from "./_sections/UserProfileSection";
 import getHoldingByPortfolio from "@/actions/holding/getHoldingByPortfolio";
 import getPortfolio from "@/actions/portfolio/getPortfolio";
 import { getHoldingsData } from "@/utils/functions";
+import BackButton from "@/components/BackButton";
+import RiskProfileSection from "./_sections/RiskProfileSection";
 
 export const maxDuration = 60;
 
@@ -44,36 +44,39 @@ export default async function Page({ params }: { params: { id: string } }) {
 	const proposedHoldingsData = await getHoldingsData(proposedHoldings);
 
 	return (
-		<div className="flex flex-col gap-5">
-			<UserProfileSection user={user} />
+		<>
+			{session?.user.role === Role.ADVISOR && <BackButton />}
+			<div className="flex flex-col gap-5">
+				<UserProfileSection user={user} />
 
-			<RiskProfileSection
-				user={user}
-				currentRole={session?.user.role as Role}
-			/>
-
-			<PortfolioSection
-				user={user}
-				currentRole={session?.user.role as Role}
-				isAdmin={session?.user.isAdmin as boolean}
-				portfolio={currentPortfolio}
-				holdingsData={currentHoldingsData}
-			/>
-
-			<div className="grid grid-cols-2 gap-5">
-				<CurrentCompositionSection
+				<RiskProfileSection
 					user={user}
 					currentRole={session?.user.role as Role}
+				/>
+
+				<PortfolioSection
+					user={user}
+					currentRole={session?.user.role as Role}
+					isAdmin={session?.user.isAdmin as boolean}
 					portfolio={currentPortfolio}
 					holdingsData={currentHoldingsData}
 				/>
-				<ProposedCompositionSection
-					user={user}
-					currentRole={session?.user.role as Role}
-					portfolio={proposedPortfolio}
-					holdingsData={proposedHoldingsData}
-				/>
+
+				<div className="grid grid-cols-2 gap-5">
+					<CurrentCompositionSection
+						user={user}
+						currentRole={session?.user.role as Role}
+						portfolio={currentPortfolio}
+						holdingsData={currentHoldingsData}
+					/>
+					<ProposedCompositionSection
+						user={user}
+						currentRole={session?.user.role as Role}
+						portfolio={proposedPortfolio}
+						holdingsData={proposedHoldingsData}
+					/>
+				</div>
 			</div>
-		</div>
+		</>
 	);
 }

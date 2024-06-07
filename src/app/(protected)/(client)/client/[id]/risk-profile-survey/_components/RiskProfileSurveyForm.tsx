@@ -17,14 +17,14 @@ import {
 import {
 	RadioGroup,
 	RadioGroupItem,
-} from "../../../../../../components/ui/radio-group";
-import { Label } from "../../../../../../components/ui/label";
+} from "../../../../../../../components/ui/radio-group";
+import { Label } from "../../../../../../../components/ui/label";
 import {
 	Card,
 	CardContent,
 	CardHeader,
 	CardTitle,
-} from "../../../../../../components/ui/card";
+} from "../../../../../../../components/ui/card";
 import { riskProfileSurvey } from "@/utils/consts";
 import Image from "next/image";
 import { getRiskProfileResult } from "@/utils/functions";
@@ -32,10 +32,10 @@ import { useRouter } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { UpdateRiskProfile } from "@/actions/users/updateRiskProfile/schema";
 import { useAction } from "@/hooks/useAction";
-import { toast } from "../../../../../../components/ui/use-toast";
+import { toast } from "../../../../../../../components/ui/use-toast";
 import { updateRiskProfile } from "@/actions/users/updateRiskProfile";
 import { CreateUser } from "@/actions/users/createUser/schema";
-import { Input } from "../../../../../../components/ui/input";
+import { Input } from "../../../../../../../components/ui/input";
 
 const formSchema = UpdateRiskProfile;
 

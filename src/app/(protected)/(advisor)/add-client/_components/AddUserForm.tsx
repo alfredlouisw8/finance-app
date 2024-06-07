@@ -15,17 +15,17 @@ import {
 	CardFooter,
 	CardHeader,
 	CardTitle,
-} from "../../../../../components/ui/card";
+} from "../../../../../../components/ui/card";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Button } from "../../../../../components/ui/button";
+import { Button } from "../../../../../../components/ui/button";
 import { useRouter } from "next/navigation";
 import { CreateUser } from "@/actions/users/createUser/schema";
 import { useAction } from "@/hooks/useAction";
 import { createUser } from "@/actions/users/createUser";
-import { toast } from "../../../../../components/ui/use-toast";
+import { toast } from "../../../../../../components/ui/use-toast";
 
 const formSchema = CreateUser;
 
@@ -35,6 +35,8 @@ export default function AddUserForm() {
 		defaultValues: {
 			email: "",
 			name: "",
+			address: "",
+			phone: "",
 		},
 	});
 	const router = useRouter();
@@ -97,6 +99,32 @@ export default function AddUserForm() {
 									<FormLabel>Name</FormLabel>
 									<FormControl>
 										<Input placeholder="Name" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="address"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Address</FormLabel>
+									<FormControl>
+										<Input placeholder="Address" {...field} />
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name="phone"
+							render={({ field }) => (
+								<FormItem>
+									<FormLabel>Phone</FormLabel>
+									<FormControl>
+										<Input placeholder="Phone" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>

@@ -6,9 +6,9 @@ import {
 	DialogTitle,
 	DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "../../../../../components/ui/button";
+import { Button } from "../../../../../../components/ui/button";
 import Link from "next/link";
-import PieChart from "../../../../../components/PieChart";
+import PieChart from "../../../../../../components/PieChart";
 
 import { Role, UserDetail } from "@/types/User";
 import { User } from "@prisma/client";

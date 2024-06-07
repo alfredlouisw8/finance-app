@@ -13,7 +13,7 @@ import { getServerSession } from "next-auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-export default async function ProtectedLayout({
+export default async function AdvisorLayout({
 	children,
 }: {
 	children: React.ReactNode;
@@ -22,6 +22,10 @@ export default async function ProtectedLayout({
 
 	if (!session) {
 		redirect("/sign-in");
+	}
+
+	if (session.user.role === Role.CLIENT) {
+		redirect(`/client/${session.user.id}`);
 	}
 
 	return (

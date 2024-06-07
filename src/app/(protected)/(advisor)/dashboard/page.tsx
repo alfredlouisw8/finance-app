@@ -10,12 +10,20 @@ import {
 	TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye } from "lucide-react";
+import { Eye, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { getServerSession } from "next-auth";
 import { useRouter } from "next/navigation";
 import getUsersByAdvisor from "@/actions/users/getUsersByAdvisor";
 import { User } from "@prisma/client";
+import {
+	Dialog,
+	DialogContent,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
+} from "@/components/ui/dialog";
+import DeleteUserForm from "./_components/DeleteUserForm";
 
 export default async function Dashboard() {
 	const users = await getUsersByAdvisor();
@@ -47,10 +55,26 @@ export default async function Dashboard() {
 									<TableCell>{data.name}</TableCell>
 									<TableCell>{data.email}</TableCell>
 									<TableCell>{format(data.createdAt, "dd-MM-yyyy")}</TableCell>
-									<TableCell className="text-right flex items-center justify-end">
+									<TableCell className="text-right flex items-center justify-end gap-3">
 										<Link href={`/client/${data.id}`}>
-											<Eye />
+											<Button>
+												<Eye />
+											</Button>
 										</Link>
+										<Dialog>
+											<DialogTrigger asChild>
+												<Button variant="destructive">
+													<Trash2 size={20} />
+												</Button>
+											</DialogTrigger>
+											<DialogContent>
+												<DialogHeader>
+													<DialogTitle>Delete User</DialogTitle>
+												</DialogHeader>
+
+												<DeleteUserForm userId={data.id} />
+											</DialogContent>
+										</Dialog>
 									</TableCell>
 								</TableRow>
 							))
