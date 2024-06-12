@@ -28,27 +28,5 @@ export default async function AdvisorLayout({
 		redirect(`/client/${session.user.id}`);
 	}
 
-	return (
-		<>
-			<div className="p-4  border-b-2">
-				<div className="container flex justify-between items-center">
-					<Link href="/dashboard">
-						<p>Logo</p>
-					</Link>
-					<DropdownMenu>
-						<DropdownMenuTrigger>
-							{session ? "signed in" : "signed out"}
-						</DropdownMenuTrigger>
-						<DropdownMenuContent>
-							<DropdownMenuItem>
-								<LogoutButton />
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
-			</div>
-
-			<div className="p-4 container">{children}</div>
-		</>
-	);
+	return <>{children}</>;
 }

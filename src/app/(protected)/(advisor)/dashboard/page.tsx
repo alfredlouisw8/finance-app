@@ -33,7 +33,7 @@ export default async function Dashboard() {
 			<CardHeader className="flex flex-row justify-between items-center">
 				<CardTitle>Users List</CardTitle>
 				<Button className="mt-0">
-					<Link href="/client/new">Add User</Link>
+					<Link href="/add-client">Add User</Link>
 				</Button>
 			</CardHeader>
 			<CardContent>

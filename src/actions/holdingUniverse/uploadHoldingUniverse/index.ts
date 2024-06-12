@@ -34,8 +34,6 @@ async function upsertHoldingUniverse(ticker: string, userId: string) {
 		return; //ticker not found
 	}
 
-	console.log();
-
 	await prisma.holdingUniverse.create({
 		data: {
 			name: search.longName,
@@ -102,6 +100,7 @@ export async function uploadHoldingUniverse(prevState: any, data: FormData) {
 				// You can now work with the parsed CSV data
 				for (const row of results) {
 					if (row.ticker) {
+						console.log(row.ticker);
 						await upsertHoldingUniverse(row.ticker, userId);
 					}
 				}
