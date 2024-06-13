@@ -15,7 +15,7 @@ type Props = {
 	userId: string;
 };
 
-export default function UploadCSVForm({ userId }: Props) {
+export default function UploadCSVFormBackend({ userId }: Props) {
 	const closeBtnRef = useRef<HTMLButtonElement>(null);
 
 	const [tickers, setTickers] = useState("");

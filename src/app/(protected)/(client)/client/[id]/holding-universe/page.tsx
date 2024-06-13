@@ -14,7 +14,7 @@ import HoldingUniverseForm from "../_components/HoldingUniverseForm";
 
 import { useRouter } from "next/navigation";
 import BackButton from "@/components/BackButton";
-import UploadCSVForm from "../_components/UploadCSVForm";
+import UploadCSVFormFrontend from "../_components/UploadCSVFormFrontend";
 
 export default async function Page({ params }: { params: { id: string } }) {
 	const user = await getUserDetail(params.id);
@@ -42,7 +42,7 @@ export default async function Page({ params }: { params: { id: string } }) {
 									<DialogTitle>Upload CSV</DialogTitle>
 								</DialogHeader>
 
-								<UploadCSVForm userId={params.id} />
+								<UploadCSVFormFrontend userId={params.id} />
 							</DialogContent>
 						</Dialog>
 						<Dialog>
