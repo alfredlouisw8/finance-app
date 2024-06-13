@@ -21,14 +21,16 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
 	let holdingUniverse;
 
-	const { holdingUniverseId, userId } = data;
+	const { holdingUniverseIds, userId } = data;
 
 	try {
-		holdingUniverse = await prisma.holdingUniverse.delete({
-			where: {
-				id: holdingUniverseId,
-			},
-		});
+		for (const holdingUniverseId of holdingUniverseIds) {
+			holdingUniverse = await prisma.holdingUniverse.delete({
+				where: {
+					id: holdingUniverseId,
+				},
+			});
+		}
 	} catch (error: any) {
 		console.log(error);
 		return {

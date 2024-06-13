@@ -1,6 +1,6 @@
 import { z } from "zod";
 
 export const DeleteHoldingUniverse = z.object({
-	holdingUniverseId: z.string(),
+	holdingUniverseIds: z.string().array(),
 	userId: z.string(),
 });

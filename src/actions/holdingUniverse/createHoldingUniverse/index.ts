@@ -14,6 +14,38 @@ import YahooFinance from "@/lib/yahoo-finance";
 import { getHoldingType, getUpdatedTicker } from "@/utils/functions";
 import { HoldingType } from "@prisma/client";
 
+async function upsertHoldingUniverse(ticker: string, userId: string) {
+	const type = getHoldingType(ticker);
+	const updatedTicker = getUpdatedTicker(ticker, type);
+
+	//search for existing holding universe
+	const holdingUniverse = await prisma.holdingUniverse.findFirst({
+		where: {
+			ticker: updatedTicker.toUpperCase(),
+			userId: userId,
+		},
+	});
+
+	if (holdingUniverse) {
+		return; //if exist return
+	}
+
+	const search = await YahooFinance.search(updatedTicker);
+
+	if (!search) {
+		return; //ticker not found
+	}
+
+	return await prisma.holdingUniverse.create({
+		data: {
+			name: search.longName,
+			ticker: updatedTicker.toUpperCase(),
+			type,
+			userId,
+		},
+	});
+}
+
 const handler = async (data: InputType): Promise<ReturnType> => {
 	const session = await getServerSession(authOptions);
 
@@ -27,29 +59,18 @@ const handler = async (data: InputType): Promise<ReturnType> => {
 
 	const { ticker, userId } = data;
 
-	const type = getHoldingType(ticker);
-	const updatedTicker = getUpdatedTicker(ticker, type);
+	//ticker can be delimited by ;
+	const tickers = ticker.replace(/\s+/g, "").split(";");
 
-	try {
-		const search = await YahooFinance.search(updatedTicker);
-
-		if (!search) {
-			throw new Error("Ticker not found");
+	for (const ticker of tickers) {
+		try {
+			holdingUniverse = await upsertHoldingUniverse(ticker, userId);
+		} catch (error: any) {
+			console.log(error);
+			return {
+				error: error.message || "Failed to create holding universe.",
+			};
 		}
-
-		holdingUniverse = await prisma.holdingUniverse.create({
-			data: {
-				name: search.longName,
-				ticker: updatedTicker.toUpperCase(),
-				type,
-				userId,
-			},
-		});
-	} catch (error: any) {
-		console.log(error);
-		return {
-			error: error.message || "Failed to create holding universe.",
-		};
 	}
 
 	revalidatePath(`/client/${userId}/holding-universe`);

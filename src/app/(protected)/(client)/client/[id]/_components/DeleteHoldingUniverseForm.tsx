@@ -11,15 +11,18 @@ import { z } from "zod";
 
 import { deleteHoldingUniverse } from "@/actions/holdingUniverse/deleteHoldingUniverse";
 import { DeleteHoldingUniverse } from "@/actions/holdingUniverse/deleteHoldingUniverse/schema";
+import { DialogClose, DialogFooter } from "@/components/ui/dialog";
 
 type Props = {
 	userId: string;
-	holdingUniverseId: string;
+	holdingUniverseIds: string[];
+	setSelectedItems: React.Dispatch<React.SetStateAction<string[]>>;
 };
 
 export default function DeleteHoldingUniverseForm({
 	userId,
-	holdingUniverseId,
+	holdingUniverseIds,
+	setSelectedItems,
 }: Props) {
 	const formSchema = DeleteHoldingUniverse;
 
@@ -27,7 +30,7 @@ export default function DeleteHoldingUniverseForm({
 		resolver: zodResolver(formSchema),
 		defaultValues: {
 			userId,
-			holdingUniverseId,
+			holdingUniverseIds,
 		},
 	});
 
@@ -48,6 +51,8 @@ export default function DeleteHoldingUniverseForm({
 	async function onSubmit(values: z.infer<typeof formSchema>) {
 		await execute(values);
 
+		setSelectedItems([]);
+
 		if (fieldErrors) {
 			for (const [key, value] of Object.entries(fieldErrors)) {
 				form.setError(key as keyof typeof fieldErrors, {
@@ -65,13 +70,17 @@ export default function DeleteHoldingUniverseForm({
 				<form onSubmit={form.handleSubmit(onSubmit)}>
 					<input
 						type="hidden"
-						name="holdingUniverseId"
-						value={holdingUniverseId}
+						name="holdingUniverseIds"
+						value={holdingUniverseIds}
 					/>
 					<input type="hidden" name="userId" value={userId} />
 					<p>Are you sure?</p>
 					<div className="flex justify-end">
-						<Button type="submit">Continue</Button>
+						<DialogFooter>
+							<DialogClose asChild>
+								<Button type="submit">Continue</Button>
+							</DialogClose>
+						</DialogFooter>
 					</div>
 				</form>
 			</Form>
