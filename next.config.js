@@ -1,23 +1,39 @@
-/** @type {import('next').NextConfig} */
+const { setupHoneybadger } = require("@honeybadger-io/nextjs");
 
-"use strict";
+const moduleExports = {
+	// ... Your existing module.exports object goes here
+};
 
-const nrExternals = require("@newrelic/next/load-externals");
-const nextConfig = {
-	experimental: {
-		// Without this setting, the Next.js compilation step will routinely
-		// try to import files such as `LICENSE` from the `newrelic` module.
-		// See https://nextjs.org/docs/app/api-reference/next-config-js/serverComponentsExternalPackages.
-		serverComponentsExternalPackages: ["newrelic"],
-	},
+// Showing default values
+const honeybadgerNextJsConfig = {
+	// Disable source map upload (optional)
+	disableSourceMapUpload: false,
 
-	// In order for newrelic to effectively instrument a Next.js application,
-	// the modules that newrelic supports should not be mangled by webpack. Thus,
-	// we need to "externalize" all of the modules that newrelic supports.
-	webpack: (config) => {
-		nrExternals(config);
-		return config;
+	// Hide debug messages (optional)
+	silent: true,
+
+	// More information available at @honeybadger-io/webpack: https://github.com/honeybadger-io/honeybadger-js/tree/master/packages/webpack
+	webpackPluginOptions: {
+		// Required if you want to upload source maps to Honeybadger
+		apiKey: process.env.NEXT_PUBLIC_HONEYBADGER_API_KEY,
+
+		// Required if you want to upload source maps to Honeybadger
+		assetsUrl: process.env.NEXT_PUBLIC_HONEYBADGER_ASSETS_URL,
+
+		revision: process.env.NEXT_PUBLIC_HONEYBADGER_REVISION,
+		endpoint: "https://api.honeybadger.io/v1/source_maps",
+		ignoreErrors: false,
+		retries: 3,
+		workerCount: 5,
+		deploy: {
+			environment:
+				process.env.NEXT_PUBLIC_VERCEL_ENV ||
+				process.env.VERCEL_ENV ||
+				process.env.NODE_ENV,
+			repository: "https://url.to.git.repository",
+			localUsername: "username",
+		},
 	},
 };
 
-module.exports = nextConfig;
+module.exports = setupHoneybadger(moduleExports, honeybadgerNextJsConfig);

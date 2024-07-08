@@ -100,7 +100,6 @@ export async function uploadHoldingUniverse(prevState: any, data: FormData) {
 				// You can now work with the parsed CSV data
 				for (const row of results) {
 					if (row.ticker) {
-						console.log(row.ticker);
 						await upsertHoldingUniverse(row.ticker, userId);
 					}
 				}

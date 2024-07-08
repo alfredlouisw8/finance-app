@@ -45,7 +45,6 @@ export default function UploadCSVFormBackend({ userId }: Props) {
 						.map((row: any) => row.Ticker)
 						.filter((ticker: string) => ticker && ticker.trim() !== "")
 						.join(";");
-					console.log(tickers);
 					setTickers(tickers);
 				},
 				header: true,
